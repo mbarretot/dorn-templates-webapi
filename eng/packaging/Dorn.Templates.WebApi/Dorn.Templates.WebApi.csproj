@@ -19,7 +19,7 @@
         <NoWarn>$(NoWarn);NU5128</NoWarn>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageOutputPath>$(MSBuildThisFileDirectory)../../../artifacts</PackageOutputPath>
-        <PackageVersion Condition="'$(PackageVersion)'==''">0.0.1</PackageVersion>
+        <PackageVersion Condition="'$(PackageVersion)'==''">1.0.6</PackageVersion>
     </PropertyGroup>
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\" />
