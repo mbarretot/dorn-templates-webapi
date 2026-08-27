@@ -58,7 +58,7 @@
       Include="Microsoft.Extensions.DependencyInjection.Abstractions"
       Version="10.0.9"
     />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
     <!-- Concrete DI container (not just abstractions), needed by MediatorPublishTests to build
              a real IServiceProvider. -->
