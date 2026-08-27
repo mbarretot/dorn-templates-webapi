@@ -1,0 +1,5 @@
+# Normalize all text files to LF, regardless of the checkout platform's core.autocrlf.
+# Without this, Windows CI runners checkout templates/**/*.cs with CRLF, and the .NET
+# Template Engine's C-style #if/#endif conditional processing corrupts on CRLF input,
+# producing CS1028 "Unexpected preprocessor directive" only on Windows.
+* text=auto eol=lf
