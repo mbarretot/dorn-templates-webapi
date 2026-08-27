@@ -10,6 +10,12 @@ updates:
         patterns:
           - "Dorn.Messaging*"
           - "Dorn.SharedKernel"
+      dotnet-platform-packages:
+        patterns:
+          - "Microsoft.EntityFrameworkCore*"
+          - "Microsoft.AspNetCore.*"
+          - "Microsoft.Extensions.*"
+          - "Microsoft.Data.Sqlite"
     commit-message:
       prefix: "chore(deps)"
   - package-ecosystem: github-actions
