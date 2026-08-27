@@ -1,0 +1,63 @@
+services:
+  webapi:
+    build:
+      context: .
+      dockerfile: src/CleanArchWebApi.WebApi/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=CleanArchWebApi
+    depends_on:
+      - otel-collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.158.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+  tempo:
+    image: grafana/tempo:2.9.4
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml:ro
+    tmpfs:
+      - /var/tempo
+  loki:
+    image: grafana/loki:3.7.6
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    tmpfs:
+      - /loki
+  prometheus:
+    image: prom/prometheus:v3.13.2
+    # Overriding `command` drops the image CMD; --config.file/--storage.tsdb.path must be
+    # restated. Bundled prometheus.yml is fine: samples arrive via remote-write only.
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=1h
+      - --web.enable-remote-write-receiver
+    tmpfs:
+      - /prometheus
+  grafana:
+    image: grafana/grafana:13.0.6
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo

@@ -1,0 +1,19 @@
+<Project>
+    <!-- templates/webapi is self-contained (own Directory.Build.props); MSBuild imports only the nearest one. This file applies to eng/packaging/** and tests/** only. -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Authors>Dorn Contributors</Authors>
+        <RepositoryUrl>https://github.com/mbarretot/dorn-templates-webapi</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+</Project>

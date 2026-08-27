@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/*.user
+**/.git/
+.gitignore
+**/*.md
+**/.env
+**/Dockerfile*
+**/.dockerignore
+**/docker-compose*.yml
+**/appsettings.Development.json
+otel-collector-config.yaml
+tempo.yaml
+grafana/

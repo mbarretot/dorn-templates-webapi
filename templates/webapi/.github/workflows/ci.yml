@@ -1,0 +1,206 @@
+# Scaffolded by dorn (`dorn new webapi`). Builds and tests every layer of the generated Clean
+# Architecture solution across the supported orchestrator matrix, and adapts its SQL Server or
+# PostgreSQL service container to the DatabaseProvider selected at scaffold time (see
+# .github/config/db-provider.txt, emitted by the template's rename/exclude modifiers).
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      exclude_tiers:
+        description: "Comma-separated test tiers to skip (Application, Integration, Functional, Architecture). Leave empty to run the whole solution in one pass."
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  # Reads the DatabaseProvider marker emitted at scaffold time once, up front, so
+  # build-and-test can gate its SQL Server or PostgreSQL service container on this output
+  # before any service containers start for the matrix below.
+  configuration:
+    runs-on: ubuntu-latest
+    outputs:
+      db: ${{ steps.read-marker.outputs.db }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read database provider marker
+        id: read-marker
+        run: echo "db=$(cat .github/config/db-provider.txt)" >> "$GITHUB_OUTPUT"
+
+  build-and-test:
+    needs: configuration
+    name: build-and-test (${{ matrix.os }}, ${{ matrix.orchestrator }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        orchestrator: [aspire, docker-compose, none]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: ./global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore CleanArchWebApi.slnx -maxCpuCount:1 -nodeReuse:false
+
+      - name: Build
+        run: dotnet build CleanArchWebApi.slnx -c Release --no-restore
+
+      # Starts a disposable SQL Server container as a plain step rather than a `services:`
+      # block: GitHub Actions service containers are Linux-runner only and cannot be skipped
+      # per matrix cell (the `services:` key has no `if:` of its own), so a shared services
+      # block on this os x orchestrator matrix would always attempt to start on the
+      # windows-latest cells too and fail. A gated `docker run` step gives the identical
+      # azure-sql-edge container + health check, but only for the Linux + sqlserver cell.
+      - name: Generate SQL Server SA password (Linux)
+        id: mssql-password
+        if: runner.os == 'Linux' && needs.configuration.outputs.db == 'sqlserver'
+        run: echo "value=$(openssl rand -base64 24)Aa1!" >> "$GITHUB_OUTPUT"
+
+      - name: Start SQL Server (Linux)
+        if: runner.os == 'Linux' && needs.configuration.outputs.db == 'sqlserver'
+        env:
+          MSSQL_SA_PASSWORD: ${{ steps.mssql-password.outputs.value }}
+        run: |
+          docker run -d --name mssql \
+            -e ACCEPT_EULA=Y \
+            -e MSSQL_SA_PASSWORD="$MSSQL_SA_PASSWORD" \
+            -p 1433:1433 \
+            mcr.microsoft.com/azure-sql-edge
+
+      - name: Wait for SQL Server to be healthy (Linux)
+        if: runner.os == 'Linux' && needs.configuration.outputs.db == 'sqlserver'
+        env:
+          MSSQL_SA_PASSWORD: ${{ steps.mssql-password.outputs.value }}
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec mssql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -Q "select 1" > /dev/null 2>&1; then
+              echo "SQL Server is healthy."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::SQL Server did not become healthy in time."
+          exit 1
+
+      # best-effort: Windows + SQL Server requires a Docker host, which github-hosted
+      # windows-latest runners do not provide. The Integration tier's PersistenceTestFixture
+      # uses Testcontainers.MsSql internally (a .NET library, not invoked directly here) to
+      # start SQL Server when no service container is present; on Windows without Docker that
+      # fixture setup will fail and the test step below surfaces the failure.
+      - name: Windows + SQL Server caveat
+        if: runner.os == 'Windows' && needs.configuration.outputs.db == 'sqlserver'
+        shell: pwsh
+        run: |
+          Write-Host "::warning::Windows + SQL Server is best-effort: the Integration tier's PersistenceTestFixture requires a Docker host, which github-hosted windows-latest runners do not provide."
+
+      # Starts a disposable PostgreSQL container as a plain step, for the same reason the SQL
+      # Server container above is a plain step rather than a `services:` block: GitHub Actions
+      # service containers cannot be skipped per matrix cell.
+      - name: Generate PostgreSQL password (Linux)
+        id: postgres-password
+        if: runner.os == 'Linux' && needs.configuration.outputs.db == 'postgres'
+        run: echo "value=$(openssl rand -base64 24)" >> "$GITHUB_OUTPUT"
+
+      - name: Start PostgreSQL (Linux)
+        if: runner.os == 'Linux' && needs.configuration.outputs.db == 'postgres'
+        env:
+          POSTGRES_PASSWORD: ${{ steps.postgres-password.outputs.value }}
+        run: |
+          docker run -d --name postgres \
+            -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+            -p 5432:5432 \
+            postgres:17
+
+      - name: Wait for PostgreSQL to be healthy (Linux)
+        if: runner.os == 'Linux' && needs.configuration.outputs.db == 'postgres'
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec postgres pg_isready -U postgres > /dev/null 2>&1; then
+              echo "PostgreSQL is healthy."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::PostgreSQL did not become healthy in time."
+          exit 1
+
+      # best-effort: Windows + PostgreSQL requires a Docker host, which github-hosted
+      # windows-latest runners do not provide. The Integration tier's PersistenceTestFixture
+      # uses Testcontainers.PostgreSql internally (a .NET library, not invoked directly here)
+      # to start PostgreSQL when no service container is present; on Windows without Docker
+      # that fixture setup will fail and the test step below surfaces the failure.
+      - name: Windows + PostgreSQL caveat
+        if: runner.os == 'Windows' && needs.configuration.outputs.db == 'postgres'
+        shell: pwsh
+        run: |
+          Write-Host "::warning::Windows + PostgreSQL is best-effort: the Integration tier's PersistenceTestFixture requires a Docker host, which github-hosted windows-latest runners do not provide."
+
+      - name: Test (all tiers)
+        if: github.event.inputs.exclude_tiers == ''
+        run: dotnet test CleanArchWebApi.slnx --no-build -c Release --collect:"XPlat Code Coverage"
+
+      - name: Test (Application tier)
+        if: github.event.inputs.exclude_tiers != '' && !contains(inputs.exclude_tiers, 'Application')
+        run: dotnet test tests/CleanArchWebApi.Application.Tests --no-build -c Release --collect:"XPlat Code Coverage"
+
+      - name: Test (Integration tier)
+        if: github.event.inputs.exclude_tiers != '' && !contains(inputs.exclude_tiers, 'Integration')
+        run: dotnet test tests/CleanArchWebApi.Integration.Tests --no-build -c Release --collect:"XPlat Code Coverage"
+
+      - name: Test (Functional tier)
+        if: github.event.inputs.exclude_tiers != '' && !contains(inputs.exclude_tiers, 'Functional')
+        run: dotnet test tests/CleanArchWebApi.Functional.Tests --no-build -c Release --collect:"XPlat Code Coverage"
+
+      - name: Test (Architecture tier)
+        if: github.event.inputs.exclude_tiers != '' && !contains(inputs.exclude_tiers, 'Architecture')
+        run: dotnet test tests/CleanArchWebApi.Architecture.Tests --no-build -c Release --collect:"XPlat Code Coverage"
+
+      # Aggregates the per-project cobertura.xml files into a single report. Ubuntu-only: the
+      # upload-artifact step below only needs one source.
+      - name: Aggregate coverage report (ReportGenerator)
+        if: matrix.os == 'ubuntu-latest'
+        shell: pwsh
+        run: >
+          dotnet tool install --tool-path ./.tools/ dotnet-reportgenerator-globaltool;
+          ./.tools/reportgenerator
+          -reports:"**/coverage.cobertura.xml"
+          -targetdir:"./coverage-report"
+          -reporttypes:"Html;Cobertura;Badges"
+          -assemblyfilters:+:-*.Tests
+
+      - name: Upload coverage report as artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report-${{ matrix.orchestrator }}
+          path: ./coverage-report
+          retention-days: 30

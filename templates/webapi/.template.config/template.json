@@ -1,0 +1,269 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Dorn Contributors",
+  "classifications": ["Web", "WebAPI", "Clean Architecture"],
+  "identity": "Dorn.Templates.WebApi",
+  "name": "Dorn Clean Architecture Web API",
+  "description": "Production-ready Clean Architecture Web API with CQRS, layered structure, and Docker support.",
+  "shortName": "dorn-webapi",
+  "preferNameDirectory": true,
+  "sourceName": "CleanArchWebApi",
+  "symbols": {
+    "IncludeTests": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Include the xUnit test projects: Unit (Application), Integration (real DatabaseProvider), Architecture (layering rules), and Functional (HTTP endpoints)."
+    },
+    "Orm": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        { "choice": "efcore", "description": "Entity Framework Core — migrations, change tracking, DbContext (default)." },
+        { "choice": "dapper", "description": "Dapper — micro-ORM, raw SQL, maximum control and performance." }
+      ],
+      "defaultValue": "efcore",
+      "description": "The Object-Relational Mapper used for data access."
+    },
+    "UseEfCore": { "type": "computed", "value": "(Orm == \"efcore\")" },
+    "UseDapper": { "type": "computed", "value": "(Orm == \"dapper\")" },
+    "DatabaseProvider": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        { "choice": "sqlite", "description": "SQLite — no external setup required (default)." },
+        { "choice": "sqlserver", "description": "SQL Server, run via an Aspire-managed container." },
+        { "choice": "postgres", "description": "PostgreSQL, run via an Aspire-managed container." }
+      ],
+      "defaultValue": "sqlite",
+      "description": "The EF Core database provider used for persistence."
+    },
+    "UseSqlite": { "type": "computed", "value": "(DatabaseProvider == \"sqlite\")" },
+    "UseSqlServer": { "type": "computed", "value": "(DatabaseProvider == \"sqlserver\")" },
+    "UsePostgres": { "type": "computed", "value": "(DatabaseProvider == \"postgres\")" },
+    "Orchestrator": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "aspire",
+          "description": "Local orchestration via .NET Aspire AppHost (default)."
+        },
+        {
+          "choice": "docker-compose",
+          "description": "Docker Compose scaffolding; no Aspire dependency."
+        },
+        {
+          "choice": "none",
+          "description": "No orchestration scaffolding; run the API directly."
+        }
+      ],
+      "defaultValue": "aspire",
+      "description": "Local orchestration approach for the generated service."
+    },
+    "UseAspire": { "type": "computed", "value": "(Orchestrator == \"aspire\")" },
+    "UseCompose": { "type": "computed", "value": "(Orchestrator == \"docker-compose\")" },
+    "Auth": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        { "choice": "none", "description": "No authentication (default)." },
+        { "choice": "custom", "description": "Self-issued JWT with a seeded demo user." },
+        { "choice": "azure-ad", "description": "Validate Microsoft Entra ID tokens (validation only)." }
+      ],
+      "defaultValue": "none",
+      "description": "Authentication scheme for the generated API."
+    },
+    "UseCustomAuth": { "type": "computed", "value": "(Auth == \"custom\")" },
+    "UseAzureAdAuth": { "type": "computed", "value": "(Auth == \"azure-ad\")" },
+    "UseAuth": { "type": "computed", "value": "(UseCustomAuth || UseAzureAdAuth)" }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!IncludeTests)",
+          "exclude": ["tests/**"]
+        },
+        {
+          "condition": "(UseDapper)",
+          "exclude": [
+            "src/CleanArchWebApi.Infrastructure/Repositories/EfCore/**",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/**",
+            "src/CleanArchWebApi.Infrastructure/Persistence/ApplicationDbContext.cs"
+          ]
+        },
+        {
+          "condition": "(UseEfCore)",
+          "exclude": ["src/CleanArchWebApi.Infrastructure/Repositories/Dapper/**"]
+        },
+        {
+          "condition": "(UseSqlServer)",
+          "rename": {
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/": "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/"
+          },
+          "exclude": [
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/**",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/**"
+          ]
+        },
+        {
+          "condition": "(UseSqlite)",
+          "rename": {
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/": "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/"
+          },
+          "exclude": [
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/**",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/**"
+          ]
+        },
+        {
+          "condition": "(UsePostgres)",
+          "rename": {
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/": "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/"
+          },
+          "exclude": [
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/**",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/**"
+          ]
+        },
+        {
+          "condition": "(!UseAspire)",
+          "exclude": [
+            "src/CleanArchWebApi.AppHost/**",
+            "src/CleanArchWebApi.ServiceDefaults/**"
+          ]
+        },
+        {
+          "condition": "(UseAspire)",
+          "exclude": ["CleanArchWebApi.Compose.slnx"]
+        },
+        {
+          "condition": "(!UseCompose)",
+          "exclude": [
+            "docker-compose.yml",
+            "docker-compose.SqlServer.yml",
+            "docker-compose.Postgres.yml",
+            "otel-collector-config.yaml",
+            "tempo.yaml",
+            "grafana/provisioning/datasources/datasources.yaml"
+          ]
+        },
+        {
+          "condition": "(!UseAspire)",
+          "rename": {
+            "CleanArchWebApi.Compose.slnx": "CleanArchWebApi.slnx"
+          },
+          "exclude": ["CleanArchWebApi.slnx"]
+        },
+        {
+          "condition": "(UseCompose && UseSqlServer)",
+          "rename": {
+            "docker-compose.SqlServer.yml": "docker-compose.yml"
+          },
+          "exclude": ["docker-compose.yml", "docker-compose.Postgres.yml"]
+        },
+        {
+          "condition": "(UseCompose && UsePostgres)",
+          "rename": {
+            "docker-compose.Postgres.yml": "docker-compose.yml"
+          },
+          "exclude": ["docker-compose.yml", "docker-compose.SqlServer.yml"]
+        },
+        {
+          "condition": "(UseCompose && UseSqlite)",
+          "exclude": ["docker-compose.SqlServer.yml", "docker-compose.Postgres.yml"]
+        },
+        {
+          "condition": "(UseSqlServer)",
+          "rename": {
+            ".github/config/db-provider.txt.tpl-sqlserver": ".github/config/db-provider.txt"
+          },
+          "exclude": [
+            ".github/config/db-provider.txt.tpl-sqlite",
+            ".github/config/db-provider.txt.tpl-postgres"
+          ]
+        },
+        {
+          "condition": "(UseSqlite)",
+          "rename": {
+            ".github/config/db-provider.txt.tpl-sqlite": ".github/config/db-provider.txt"
+          },
+          "exclude": [
+            ".github/config/db-provider.txt.tpl-sqlserver",
+            ".github/config/db-provider.txt.tpl-postgres"
+          ]
+        },
+        {
+          "condition": "(UsePostgres)",
+          "rename": {
+            ".github/config/db-provider.txt.tpl-postgres": ".github/config/db-provider.txt"
+          },
+          "exclude": [
+            ".github/config/db-provider.txt.tpl-sqlite",
+            ".github/config/db-provider.txt.tpl-sqlserver"
+          ]
+        },
+        {
+          "condition": "(!UseAuth)",
+          "exclude": [
+            "src/CleanArchWebApi.WebApi/Extensions/AuthenticationExtensions.cs",
+            "src/CleanArchWebApi.WebApi/Endpoints/MeEndpoints.cs"
+          ]
+        },
+        {
+          "condition": "(!UseCustomAuth)",
+          "exclude": [
+            "src/CleanArchWebApi.WebApi/Endpoints/AuthEndpoints.cs",
+            "src/CleanArchWebApi.Domain/Users/AppUser.cs",
+            "src/CleanArchWebApi.Application/Auth/Login/LoginCommand.cs",
+            "src/CleanArchWebApi.Application/Auth/Login/LoginCommandHandler.cs",
+            "src/CleanArchWebApi.Application/Auth/Login/LoginCommandValidator.cs",
+            "src/CleanArchWebApi.Application/Auth/Login/LoginResponse.cs",
+            "src/CleanArchWebApi.Application/Common/Security/ITokenService.cs",
+            "src/CleanArchWebApi.Infrastructure/Auth/JwtOptions.cs",
+            "src/CleanArchWebApi.Infrastructure/Auth/JwtTokenService.cs",
+            "src/CleanArchWebApi.Infrastructure/Auth/AuthSeedOptions.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Seed/AuthSeeder.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/20260807050632_AddAuthUser.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/20260807050632_AddAuthUser.Designer.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/20260807050702_AddAuthUser.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/20260807050702_AddAuthUser.Designer.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/20260807050712_AddAuthUser.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/20260807050712_AddAuthUser.Designer.cs",
+            "tests/CleanArchWebApi.Application.Tests/Auth/JwtTokenServiceTests.cs",
+            "tests/CleanArchWebApi.Application.Tests/Auth/LoginCommandHandlerTests.cs",
+            "tests/CleanArchWebApi.Application.Tests/Auth/LoginCommandValidatorTests.cs",
+            "tests/CleanArchWebApi.Application.Tests/Auth/TestCredentials.cs",
+            "tests/CleanArchWebApi.Functional.Tests/Auth/AuthWebApplicationFactory.cs",
+            "tests/CleanArchWebApi.Functional.Tests/Auth/LoginEndpointTests.cs",
+            "tests/CleanArchWebApi.Functional.Tests/Auth/MeEndpointsTests.cs"
+          ]
+        },
+        {
+          "condition": "(!UseAzureAdAuth)",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/Auth/AzureAdWebApplicationFactory.cs",
+            "tests/CleanArchWebApi.Functional.Tests/Auth/AzureAdMeEndpointsTests.cs"
+          ]
+        }
+      ]
+    }
+  ],
+  "postActions": [
+    {
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ],
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}

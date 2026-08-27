@@ -1,0 +1,10 @@
+<Solution>
+    <Project Path="src/CleanArchWebApi.Application/CleanArchWebApi.Application.csproj" />
+    <Project Path="src/CleanArchWebApi.Domain/CleanArchWebApi.Domain.csproj" />
+    <Project Path="src/CleanArchWebApi.Infrastructure/CleanArchWebApi.Infrastructure.csproj" />
+    <Project Path="src/CleanArchWebApi.WebApi/CleanArchWebApi.WebApi.csproj" />
+    <Project Path="tests/CleanArchWebApi.Application.Tests/CleanArchWebApi.Application.Tests.csproj" />
+    <Project Path="tests/CleanArchWebApi.Architecture.Tests/CleanArchWebApi.Architecture.Tests.csproj" />
+    <Project Path="tests/CleanArchWebApi.Functional.Tests/CleanArchWebApi.Functional.Tests.csproj" />
+    <Project Path="tests/CleanArchWebApi.Integration.Tests/CleanArchWebApi.Integration.Tests.csproj" />
+</Solution>

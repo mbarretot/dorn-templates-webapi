@@ -1,0 +1,84 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\CleanArchWebApi.Domain\CleanArchWebApi.Domain.csproj" />
+    <ProjectReference Include="..\CleanArchWebApi.Application\CleanArchWebApi.Application.csproj" />
+  </ItemGroup>
+
+  <!-- Exclude ORM-specific files based on selected provider -->
+  <ItemGroup>
+    <!-- When UseEfCore is true, exclude Dapper files -->
+    <Compile Remove="Repositories\Dapper\**\*.cs" Condition="'$(UseEfCore)' == 'True'" />
+    <!-- When UseDapper is true, exclude EfCore files -->
+    <Compile Remove="Repositories\EfCore\**\*.cs" Condition="'$(UseDapper)' == 'True'" />
+    <!-- Exclude migrations when using Dapper -->
+    <Compile Remove="Persistence\Migrations\**\*.cs" Condition="'$(UseDapper)' == 'True'" />
+    <!-- Exclude ApplicationDbContext when using Dapper -->
+    <Compile Remove="Persistence\ApplicationDbContext.cs" Condition="'$(UseDapper)' == 'True'" />
+    <!-- Exclude SqlServer migrations when SqlServer is not the selected provider -->
+    <Compile
+      Remove="Persistence\Migrations\SqlServer\**\*.cs"
+      Condition="'$(UseSqlite)' == 'True' Or '$(UsePostgres)' == 'True'"
+    />
+    <!-- Exclude Sqlite migrations when UseSqlServer or UsePostgres is true -->
+    <Compile
+      Remove="Persistence\Migrations\Sqlite\**\*.cs"
+      Condition="'$(UseSqlServer)' == 'True' Or '$(UsePostgres)' == 'True'"
+    />
+    <!-- Exclude Postgres migrations when Postgres is not the selected provider -->
+    <Compile
+      Remove="Persistence\Migrations\Postgres\**\*.cs"
+      Condition="'$(UseSqlite)' == 'True' Or '$(UseSqlServer)' == 'True'"
+    />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dorn.Messaging.Contracts" />
+
+    <!-- EF Core packages — only when Orm=efcore -->
+    <PackageReference
+      Include="Microsoft.EntityFrameworkCore"
+      Condition="'$(UseEfCore)' == 'True'"
+    />
+    <PackageReference
+      Include="Microsoft.EntityFrameworkCore.Sqlite"
+      Condition="'$(UseEfCore)' == 'True' And '$(UseSqlite)' == 'True'"
+    />
+    <PackageReference
+      Include="Microsoft.EntityFrameworkCore.SqlServer"
+      Condition="'$(UseEfCore)' == 'True' And '$(UseSqlServer)' == 'True'"
+    />
+    <PackageReference
+      Include="Npgsql.EntityFrameworkCore.PostgreSQL"
+      Condition="'$(UseEfCore)' == 'True' And '$(UsePostgres)' == 'True'"
+    />
+    <PackageReference
+      Include="Microsoft.EntityFrameworkCore.Design"
+      Condition="'$(UseEfCore)' == 'True'"
+    />
+
+    <!-- Dapper packages — only when Orm=dapper -->
+    <PackageReference Include="Dapper" Condition="'$(UseDapper)' == 'True'" />
+    <PackageReference
+      Include="Microsoft.Extensions.Identity.Core"
+      Condition="'$(UseCustomAuth)' == 'True'"
+    />
+    <PackageReference
+      Include="Microsoft.IdentityModel.JsonWebTokens"
+      Condition="'$(UseCustomAuth)' == 'True'"
+    />
+    <PackageReference
+      Include="Microsoft.Data.Sqlite"
+      Condition="'$(UseDapper)' == 'True' And '$(UseSqlite)' == 'True'"
+    />
+    <PackageReference
+      Include="Microsoft.Data.SqlClient"
+      Condition="'$(UseDapper)' == 'True' And '$(UseSqlServer)' == 'True'"
+    />
+    <PackageReference
+      Include="Npgsql"
+      Condition="'$(UseDapper)' == 'True' And '$(UsePostgres)' == 'True'"
+    />
+
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+  </ItemGroup>
+</Project>

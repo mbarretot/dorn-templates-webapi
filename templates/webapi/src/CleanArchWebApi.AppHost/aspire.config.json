@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "CleanArchWebApi.AppHost.csproj"
+  }
+}

@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CleanArchWebApi.Application\CleanArchWebApi.Application.csproj" />
+    <ProjectReference Include="..\..\src\CleanArchWebApi.Infrastructure\CleanArchWebApi.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dorn.Messaging.Contracts" />
+    <!-- Unconditional: this test project itself is only generated when UseSqlite is one of the
+         possible provider selections at template-authoring time, but its DbContextOptionsBuilder
+         call is provider-conditional (#if in PersistenceTestFixture.cs); declared unconditionally
+         so central package management validates the conditional #if reference. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NSubstitute" />
+    <!-- Only restored when DatabaseProvider=sqlserver — see ADR 0013. -->
+    <PackageReference Include="Testcontainers.MsSql" Condition="'$(UseSqlServer)' == 'True'" />
+    <!-- Only restored when DatabaseProvider=postgres — see ADR 0013. -->
+    <PackageReference Include="Testcontainers.PostgreSql" Condition="'$(UsePostgres)' == 'True'" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

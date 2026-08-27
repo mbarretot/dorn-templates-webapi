@@ -1,0 +1,51 @@
+<Project>
+  <!-- Self-contained so generated projects build outside Dorn; MSBuild imports only the nearest props file. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- In-place defaults mirror template.json so the checked-in template builds with the default efcore/sqlite shape. -->
+  <PropertyGroup>
+    <UseEfCore Condition="'$(UseEfCore)' == ''">True</UseEfCore>
+    <UseDapper Condition="'$(UseDapper)' == ''">False</UseDapper>
+    <UseSqlite Condition="'$(UseSqlite)' == ''">True</UseSqlite>
+    <UseSqlServer Condition="'$(UseSqlServer)' == ''">False</UseSqlServer>
+    <UsePostgres Condition="'$(UsePostgres)' == ''">False</UsePostgres>
+    <UseCustomAuth Condition="'$(UseCustomAuth)' == ''">False</UseCustomAuth>
+    <UseAzureAdAuth Condition="'$(UseAzureAdAuth)' == ''">False</UseAzureAdAuth>
+    <UseAuth
+      Condition="'$(UseAuth)' == '' And ('$(UseCustomAuth)' == 'True' Or '$(UseCustomAuth)' == 'true' Or '$(UseAzureAdAuth)' == 'True' Or '$(UseAzureAdAuth)' == 'true')"
+      >True</UseAuth>
+    <UseAuth Condition="'$(UseAuth)' == ''">False</UseAuth>
+  </PropertyGroup>
+
+  <!-- In-place builds need C# symbols because generation-time #if directives are not evaluated by MSBuild. -->
+  <PropertyGroup Condition="'$(UseEfCore)' == 'True' OR '$(UseEfCore)' == 'true'">
+    <DefineConstants>$(DefineConstants);UseEfCore</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseDapper)' == 'True' OR '$(UseDapper)' == 'true'">
+    <DefineConstants>$(DefineConstants);UseDapper</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseSqlite)' == 'True' OR '$(UseSqlite)' == 'true'">
+    <DefineConstants>$(DefineConstants);UseSqlite</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseSqlServer)' == 'True' OR '$(UseSqlServer)' == 'true'">
+    <DefineConstants>$(DefineConstants);UseSqlServer</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UsePostgres)' == 'True' OR '$(UsePostgres)' == 'true'">
+    <DefineConstants>$(DefineConstants);UsePostgres</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseCustomAuth)' == 'True' OR '$(UseCustomAuth)' == 'true'">
+    <DefineConstants>$(DefineConstants);UseCustomAuth</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseAzureAdAuth)' == 'True' OR '$(UseAzureAdAuth)' == 'true'">
+    <DefineConstants>$(DefineConstants);UseAzureAdAuth</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseAuth)' == 'True' OR '$(UseAuth)' == 'true'">
+    <DefineConstants>$(DefineConstants);UseAuth</DefineConstants>
+  </PropertyGroup>
+</Project>

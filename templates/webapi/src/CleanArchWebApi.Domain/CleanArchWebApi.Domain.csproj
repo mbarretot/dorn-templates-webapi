@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Dorn.SharedKernel" />
+    <PackageReference Include="Dorn.Messaging.Contracts" />
+    <PackageReference
+      Include="Microsoft.Extensions.Identity.Stores"
+      Condition="'$(UseCustomAuth)' == 'True'"
+    />
+    <PackageReference
+      Include="Microsoft.Extensions.Identity.Core"
+      Condition="'$(UseCustomAuth)' == 'True'"
+    />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,11 @@
+bin/
+obj/
+artifacts/
+TestResults/
+.vs/
+.idea/
+.DS_Store
+*.user
+# Local AI runtime state
+.atl/
+.codegraph/

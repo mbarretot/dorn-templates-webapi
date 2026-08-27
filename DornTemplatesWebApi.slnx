@@ -1,0 +1,23 @@
+<Solution>
+    <Configurations>
+        <Platform Name="Any CPU" />
+    </Configurations>
+    <Folder Name="/eng/packaging/">
+        <Project Path="eng/packaging/Dorn.Templates.WebApi/Dorn.Templates.WebApi.csproj" />
+    </Folder>
+    <Folder Name="/templates/webapi/">
+        <Project Path="templates/webapi/src/CleanArchWebApi.AppHost/CleanArchWebApi.AppHost.csproj" />
+        <Project Path="templates/webapi/src/CleanArchWebApi.Application/CleanArchWebApi.Application.csproj" />
+        <Project Path="templates/webapi/src/CleanArchWebApi.Domain/CleanArchWebApi.Domain.csproj" />
+        <Project Path="templates/webapi/src/CleanArchWebApi.Infrastructure/CleanArchWebApi.Infrastructure.csproj" />
+        <Project Path="templates/webapi/src/CleanArchWebApi.ServiceDefaults/CleanArchWebApi.ServiceDefaults.csproj" />
+        <Project Path="templates/webapi/src/CleanArchWebApi.WebApi/CleanArchWebApi.WebApi.csproj" />
+        <Project Path="templates/webapi/tests/CleanArchWebApi.Application.Tests/CleanArchWebApi.Application.Tests.csproj" />
+        <Project Path="templates/webapi/tests/CleanArchWebApi.Architecture.Tests/CleanArchWebApi.Architecture.Tests.csproj" />
+        <Project Path="templates/webapi/tests/CleanArchWebApi.Functional.Tests/CleanArchWebApi.Functional.Tests.csproj" />
+        <Project Path="templates/webapi/tests/CleanArchWebApi.Integration.Tests/CleanArchWebApi.Integration.Tests.csproj" />
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests/Dorn.Templates.WebApi.Tests/Dorn.Templates.WebApi.Tests.csproj" />
+    </Folder>
+</Solution>

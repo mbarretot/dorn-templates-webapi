@@ -1,0 +1,14 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  build-and-test:
+    uses: ./.github/workflows/build-test.yml
+    permissions:
+      contents: read
+
+# Releases publish via .github/workflows/publish.yml on `v*` tags.

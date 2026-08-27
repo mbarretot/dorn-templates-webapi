@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <!-- Deliberately NOT AppHost/ServiceDefaults: absent from docker-compose generations. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CleanArchWebApi.Domain\CleanArchWebApi.Domain.csproj" />
+    <ProjectReference Include="..\..\src\CleanArchWebApi.Application\CleanArchWebApi.Application.csproj" />
+    <ProjectReference Include="..\..\src\CleanArchWebApi.Infrastructure\CleanArchWebApi.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\CleanArchWebApi.WebApi\CleanArchWebApi.WebApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dorn.Messaging.Contracts" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="TngTech.ArchUnitNET.xUnit" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

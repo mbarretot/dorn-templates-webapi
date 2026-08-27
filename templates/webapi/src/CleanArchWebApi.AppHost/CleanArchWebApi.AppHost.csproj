@@ -1,0 +1,19 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.4.6">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>e6c44aaf-de34-4777-a663-18857794a838</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Condition="'$(UseSqlServer)' == 'True'" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Condition="'$(UsePostgres)' == 'True'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CleanArchWebApi.WebApi\CleanArchWebApi.WebApi.csproj" />
+  </ItemGroup>
+</Project>
