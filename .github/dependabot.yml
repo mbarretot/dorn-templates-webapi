@@ -5,6 +5,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    groups:
+      dorn-shared-packages:
+        patterns:
+          - "Dorn.Messaging*"
+          - "Dorn.SharedKernel"
     commit-message:
       prefix: "chore(deps)"
   - package-ecosystem: github-actions
