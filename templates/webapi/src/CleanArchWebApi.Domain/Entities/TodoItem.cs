@@ -16,4 +16,19 @@ public class TodoItem : AggregateRoot
         todoItem.AddDomainEvent(new TodoItemCreatedEvent(todoItem.Id, todoItem.Title));
         return todoItem;
     }
+
+    public void Rename(string title)
+    {
+        Title = title;
+    }
+
+    public void MarkComplete()
+    {
+        IsComplete = true;
+    }
+
+    public void MarkIncomplete()
+    {
+        IsComplete = false;
+    }
 }
