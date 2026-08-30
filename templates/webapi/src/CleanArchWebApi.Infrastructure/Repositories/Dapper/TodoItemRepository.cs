@@ -120,7 +120,7 @@ public class TodoItemRepository : ITodoItemRepository
 
         public TodoItem ToEntity()
         {
-            return TodoItem.Create(Title);
+            return TodoItem.Rehydrate(Guid.Parse(Id), Title, IsComplete);
         }
     }
 }
