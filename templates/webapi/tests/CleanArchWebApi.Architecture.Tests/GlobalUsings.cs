@@ -5,7 +5,7 @@ global using ArchUnitNET.Loader;
 global using ArchUnitNET.xUnit;
 global using CleanArchWebApi.Application.Todos.CreateTodoItem;
 global using CleanArchWebApi.Domain.Entities;
-global using CleanArchWebApi.Infrastructure.Persistence;
+global using CleanArchWebApi.Infrastructure.DependencyInjection;
 global using Dorn.Messaging.Contracts;
 global using Xunit;
 // "Architecture" collides with this project's own namespace segment

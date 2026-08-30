@@ -2,17 +2,17 @@ namespace CleanArchWebApi.Application.Todos.GetTodoItems;
 
 public sealed class GetTodoItemsQueryHandler : IRequestHandler<GetTodoItemsQuery, List<TodoItemDto>>
 {
-    private readonly IApplicationDbContext _dbContext;
+    private readonly ITodoItemRepository _repository;
 
-    public GetTodoItemsQueryHandler(IApplicationDbContext dbContext)
+    public GetTodoItemsQueryHandler(ITodoItemRepository repository)
     {
-        _dbContext = dbContext;
+        _repository = repository;
     }
 
     public async Task<List<TodoItemDto>> Handle(GetTodoItemsQuery request, CancellationToken ct)
     {
-        return await _dbContext
-            .Items.Select(item => new TodoItemDto(item.Id, item.Title, item.IsComplete))
-            .ToListAsync(ct);
+        var items = await _repository.GetAllAsync(ct);
+
+        return items.Select(item => new TodoItemDto(item.Id, item.Title, item.IsComplete)).ToList();
     }
 }

@@ -8,10 +8,25 @@
     <ProjectReference Include="..\..\src\CleanArchWebApi.WebApi\CleanArchWebApi.WebApi.csproj" />
   </ItemGroup>
 
+  <!-- ConfigurePersistence is split per ORM across sibling partials, selected here the same way
+       template.json selects them at generation time — see TodoWebApplicationFactory.cs. -->
   <ItemGroup>
-    <!-- Unconditional: TodoWebApplicationFactory always forces SQLite, keeping this tier Docker-free. -->
+    <Compile Remove="TodoWebApplicationFactory.EfCore.cs" Condition="'$(UseDapper)' == 'True'" />
+    <Compile
+      Remove="TodoWebApplicationFactory.Dapper.cs"
+      Condition="'$(UseDapper)' != 'True' Or '$(UseSqlite)' != 'True'"
+    />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Unconditional: the EF Core partial always forces SQLite, keeping this tier Docker-free. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <!-- Builds a real IConfiguration for the Dapper partial's DapperContext override. -->
+    <PackageReference
+      Include="Microsoft.Extensions.Configuration"
+      Condition="'$(UseDapper)' == 'True'"
+    />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
