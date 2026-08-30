@@ -24,6 +24,11 @@ builder.AddObservability();
 #if (UseAspire)
 builder.AddServiceDefaults();
 #endif
+#if (!UseAspire)
+// Aspire's ServiceDefaults wires this up already; every other orchestrator needs its own
+// baseline liveness/readiness endpoint for container healthchecks and monitoring.
+builder.Services.AddHealthChecks();
+#endif
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddMediator(typeof(CreateTodoItemCommand).Assembly);
@@ -98,6 +103,9 @@ app.MapAuthEndpoints();
 #endif
 #if (UseAspire)
 app.MapDefaultEndpoints();
+#endif
+#if (!UseAspire)
+app.MapHealthChecks("/health");
 #endif
 
 app.Run();
