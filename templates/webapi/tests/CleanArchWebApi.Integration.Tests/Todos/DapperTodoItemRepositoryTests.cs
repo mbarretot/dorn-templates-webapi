@@ -6,17 +6,20 @@ using Microsoft.Extensions.Configuration;
 
 namespace CleanArchWebApi.Integration.Tests.Todos;
 
-/// <summary>Exercises the Dapper repository's unit-of-work and domain-event publishing against a real SQLite file.</summary>
-public sealed class DapperTodoItemRepositoryTests : IDisposable
+/// <summary>
+/// Exercises the Dapper repository's schema bootstrap, unit-of-work, and domain-event
+/// publishing against a real SQLite file.
+/// </summary>
+public sealed class DapperTodoItemRepositoryTests : IAsyncLifetime
 {
     private readonly string _databasePath = Path.Combine(
         Path.GetTempPath(),
         $"{Guid.NewGuid()}.db"
     );
     private readonly IPublisher _publisher = Substitute.For<IPublisher>();
-    private readonly ITodoItemRepository _repository;
+    private ITodoItemRepository _repository = null!;
 
-    public DapperTodoItemRepositoryTests()
+    public async Task InitializeAsync()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(
@@ -28,14 +31,7 @@ public sealed class DapperTodoItemRepositoryTests : IDisposable
             .Build();
 
         var context = new DapperContext(configuration);
-        using (var connection = context.CreateConnection())
-        {
-            connection.Open();
-            using var command = connection.CreateCommand();
-            command.CommandText =
-                "CREATE TABLE TodoItems (Id TEXT PRIMARY KEY, Title TEXT NOT NULL, IsComplete INTEGER NOT NULL)";
-            command.ExecuteNonQuery();
-        }
+        await context.InitializeSchemaAsync();
 
         _repository = new TodoItemRepository(context, _publisher);
     }
@@ -72,13 +68,14 @@ public sealed class DapperTodoItemRepositoryTests : IDisposable
         Assert.Null(reloaded);
     }
 
-    public void Dispose()
+    public Task DisposeAsync()
     {
         SqliteConnection.ClearAllPools();
         if (File.Exists(_databasePath))
         {
             File.Delete(_databasePath);
         }
+        return Task.CompletedTask;
     }
 }
 #endif
