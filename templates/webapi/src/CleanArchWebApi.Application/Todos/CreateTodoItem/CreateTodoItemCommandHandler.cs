@@ -2,19 +2,19 @@ namespace CleanArchWebApi.Application.Todos.CreateTodoItem;
 
 public sealed class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemCommand, Guid>
 {
-    private readonly IApplicationDbContext _dbContext;
+    private readonly ITodoItemRepository _repository;
 
-    public CreateTodoItemCommandHandler(IApplicationDbContext dbContext)
+    public CreateTodoItemCommandHandler(ITodoItemRepository repository)
     {
-        _dbContext = dbContext;
+        _repository = repository;
     }
 
     public async Task<Guid> Handle(CreateTodoItemCommand request, CancellationToken ct)
     {
         var todoItem = TodoItem.Create(request.Title);
 
-        _dbContext.Items.Add(todoItem);
-        await _dbContext.SaveChangesAsync(ct);
+        _repository.Add(todoItem);
+        await _repository.SaveChangesAsync(ct);
 
         return todoItem.Id;
     }

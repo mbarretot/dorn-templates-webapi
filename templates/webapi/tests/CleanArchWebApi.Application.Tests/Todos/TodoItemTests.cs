@@ -28,6 +28,26 @@ public sealed class TodoItemTests
     }
 
     [Fact]
+    public void Rehydrate_PreservesPersistedIdAndCompletionState()
+    {
+        var id = Guid.NewGuid();
+
+        var todoItem = TodoItem.Rehydrate(id, Title, isComplete: true);
+
+        Assert.Equal(id, todoItem.Id);
+        Assert.Equal(Title, todoItem.Title);
+        Assert.True(todoItem.IsComplete);
+    }
+
+    [Fact]
+    public void Rehydrate_DoesNotRaiseDomainEvents()
+    {
+        var todoItem = TodoItem.Rehydrate(Guid.NewGuid(), Title, isComplete: false);
+
+        Assert.Empty(todoItem.DomainEvents);
+    }
+
+    [Fact]
     public void Rename_UpdatesTitle()
     {
         var todoItem = TodoItem.Create(Title);

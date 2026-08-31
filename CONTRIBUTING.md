@@ -29,7 +29,7 @@ dotnet test tests/Dorn.Templates.WebApi.Tests/Dorn.Templates.WebApi.Tests.csproj
 | Commands, queries, handlers | `src/CleanArchWebApi.Application` | Validators and pipeline behaviors |
 | Persistence (EF Core / Dapper) | `src/CleanArchWebApi.Infrastructure` | `Orm` and `DatabaseProvider` template.json exclude/rename rules |
 | Endpoints & composition root | `src/CleanArchWebApi.WebApi` | `Auth` template.json exclude rules |
-| Auth (`custom`, `azure-ad`) | `Extensions/AuthenticationExtensions.cs`, `Endpoints/{Auth,Me}Endpoints.cs` | `custom` requires `Orm=efcore`; enforced by `.template.config/template.json` |
+| Auth (`custom`, `azure-ad`) | `Extensions/AuthenticationExtensions.cs`, `Endpoints/{Auth,Me}Endpoints.cs` | `custom` requires `Orm=efcore`; enforced by a `#error` guard in `src/CleanArchWebApi.Domain/TemplateConstraints.cs` (the template engine has no declarative cross-parameter constraint) |
 | Orchestration (`aspire`, `docker-compose`, `none`) | `src/CleanArchWebApi.AppHost`, `src/CleanArchWebApi.ServiceDefaults`, `docker-compose*.yml` | Observability wiring stays equivalent across all three |
 | Template parameters | `.template.config/template.json` | This repo's README and `eng/packaging/Dorn.Templates.WebApi/README.md` option tables |
 | Generated CI workflow | `.github/workflows/ci.yml` (inside the template) | `tests/Dorn.Templates.WebApi.Tests` structural assertions |

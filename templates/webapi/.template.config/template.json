@@ -76,7 +76,8 @@
     },
     "UseCustomAuth": { "type": "computed", "value": "(Auth == \"custom\")" },
     "UseAzureAdAuth": { "type": "computed", "value": "(Auth == \"azure-ad\")" },
-    "UseAuth": { "type": "computed", "value": "(UseCustomAuth || UseAzureAdAuth)" }
+    "UseAuth": { "type": "computed", "value": "(UseCustomAuth || UseAzureAdAuth)" },
+    "UseCustomAuthWithDapper": { "type": "computed", "value": "(UseCustomAuth && UseDapper)" }
   },
   "sources": [
     {
@@ -96,6 +97,18 @@
         {
           "condition": "(UseEfCore)",
           "exclude": ["src/CleanArchWebApi.Infrastructure/Repositories/Dapper/**"]
+        },
+        {
+          "condition": "(UseDapper)",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.EfCore.cs"
+          ]
+        },
+        {
+          "condition": "(!(UseDapper && UseSqlite))",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.cs"
+          ]
         },
         {
           "condition": "(UseSqlServer)",

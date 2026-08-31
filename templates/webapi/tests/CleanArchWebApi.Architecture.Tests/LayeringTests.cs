@@ -10,7 +10,7 @@ public sealed class LayeringTests
         .LoadAssembliesIncludingDependencies(
             typeof(TodoItem).Assembly,
             typeof(CreateTodoItemCommand).Assembly,
-            typeof(ApplicationDbContext).Assembly,
+            typeof(ServiceCollectionExtensions).Assembly,
             typeof(Program).Assembly
         )
         .Build();
@@ -89,7 +89,7 @@ public sealed class LayeringTests
         {
             typeof(TodoItem).Assembly,
             typeof(CreateTodoItemCommand).Assembly,
-            typeof(ApplicationDbContext).Assembly,
+            typeof(ServiceCollectionExtensions).Assembly,
             typeof(Program).Assembly,
         }
             .SelectMany(assembly => assembly.GetTypes())

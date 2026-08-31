@@ -17,6 +17,16 @@ public class TodoItem : AggregateRoot
         return todoItem;
     }
 
+    public static TodoItem Rehydrate(Guid id, string title, bool isComplete)
+    {
+        return new TodoItem
+        {
+            Id = id,
+            Title = title,
+            IsComplete = isComplete,
+        };
+    }
+
     public void Rename(string title)
     {
         Title = title;

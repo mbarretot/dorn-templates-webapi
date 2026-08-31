@@ -1,37 +1,20 @@
 using CleanArchWebApi.Application.Todos.SetTodoItemCompletion;
+using CleanArchWebApi.Domain.Common.Interfaces;
 using CleanArchWebApi.Domain.Entities;
-using CleanArchWebApi.Infrastructure.Persistence;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchWebApi.Application.Tests.Todos;
 
-public sealed class SetTodoItemCompletionCommandHandlerTests : IDisposable
+public sealed class SetTodoItemCompletionCommandHandlerTests
 {
-    private readonly SqliteConnection _connection;
-    private readonly ApplicationDbContext _dbContext;
-
-    public SetTodoItemCompletionCommandHandlerTests()
-    {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        _dbContext = new ApplicationDbContext(options, Substitute.For<IPublisher>());
-        _dbContext.Database.EnsureCreated();
-    }
+    private readonly ITodoItemRepository _repository = Substitute.For<ITodoItemRepository>();
 
     [Fact]
     public async Task Handle_WhenItemExists_SetsIsCompleteAndReturnsTrue()
     {
         var todoItem = TodoItem.Create("Write the Dorn scaffolding");
-        _dbContext.Items.Add(todoItem);
-        await _dbContext.SaveChangesAsync(CancellationToken.None);
+        _repository.GetByIdAsync(todoItem.Id, Arg.Any<CancellationToken>()).Returns(todoItem);
 
-        var handler = new SetTodoItemCompletionCommandHandler(_dbContext);
+        var handler = new SetTodoItemCompletionCommandHandler(_repository);
 
         var result = await handler.Handle(
             new SetTodoItemCompletionCommand(todoItem.Id, true),
@@ -39,8 +22,9 @@ public sealed class SetTodoItemCompletionCommandHandlerTests : IDisposable
         );
 
         Assert.True(result);
-        var updated = await _dbContext.Items.FindAsync(todoItem.Id);
-        Assert.True(updated!.IsComplete);
+        Assert.True(todoItem.IsComplete);
+        _repository.Received(1).Update(todoItem);
+        await _repository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -48,24 +32,26 @@ public sealed class SetTodoItemCompletionCommandHandlerTests : IDisposable
     {
         var todoItem = TodoItem.Create("Write the Dorn scaffolding");
         todoItem.MarkComplete();
-        _dbContext.Items.Add(todoItem);
-        await _dbContext.SaveChangesAsync(CancellationToken.None);
+        _repository.GetByIdAsync(todoItem.Id, Arg.Any<CancellationToken>()).Returns(todoItem);
 
-        var handler = new SetTodoItemCompletionCommandHandler(_dbContext);
+        var handler = new SetTodoItemCompletionCommandHandler(_repository);
 
         await handler.Handle(
             new SetTodoItemCompletionCommand(todoItem.Id, false),
             CancellationToken.None
         );
 
-        var updated = await _dbContext.Items.FindAsync(todoItem.Id);
-        Assert.False(updated!.IsComplete);
+        Assert.False(todoItem.IsComplete);
     }
 
     [Fact]
     public async Task Handle_WhenItemDoesNotExist_ReturnsFalse()
     {
-        var handler = new SetTodoItemCompletionCommandHandler(_dbContext);
+        _repository
+            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((TodoItem?)null);
+
+        var handler = new SetTodoItemCompletionCommandHandler(_repository);
 
         var result = await handler.Handle(
             new SetTodoItemCompletionCommand(Guid.NewGuid(), true),
@@ -73,11 +59,5 @@ public sealed class SetTodoItemCompletionCommandHandlerTests : IDisposable
         );
 
         Assert.False(result);
-    }
-
-    public void Dispose()
-    {
-        _dbContext.Dispose();
-        _connection.Dispose();
     }
 }

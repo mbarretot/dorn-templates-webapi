@@ -5,18 +5,19 @@ namespace CleanArchWebApi.Application.Todos.GetTodoItemById;
 public sealed class GetTodoItemByIdQueryHandler
     : IRequestHandler<GetTodoItemByIdQuery, TodoItemDto?>
 {
-    private readonly IApplicationDbContext _dbContext;
+    private readonly ITodoItemRepository _repository;
 
-    public GetTodoItemByIdQueryHandler(IApplicationDbContext dbContext)
+    public GetTodoItemByIdQueryHandler(ITodoItemRepository repository)
     {
-        _dbContext = dbContext;
+        _repository = repository;
     }
 
     public async Task<TodoItemDto?> Handle(GetTodoItemByIdQuery request, CancellationToken ct)
     {
-        return await _dbContext
-            .Items.Where(item => item.Id == request.Id)
-            .Select(item => new TodoItemDto(item.Id, item.Title, item.IsComplete))
-            .FirstOrDefaultAsync(ct);
+        var todoItem = await _repository.GetByIdAsync(request.Id, ct);
+
+        return todoItem is null
+            ? null
+            : new TodoItemDto(todoItem.Id, todoItem.Title, todoItem.IsComplete);
     }
 }

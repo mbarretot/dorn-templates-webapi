@@ -1,37 +1,20 @@
 using CleanArchWebApi.Application.Todos.GetTodoItemById;
+using CleanArchWebApi.Domain.Common.Interfaces;
 using CleanArchWebApi.Domain.Entities;
-using CleanArchWebApi.Infrastructure.Persistence;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchWebApi.Application.Tests.Todos;
 
-public sealed class GetTodoItemByIdQueryHandlerTests : IDisposable
+public sealed class GetTodoItemByIdQueryHandlerTests
 {
-    private readonly SqliteConnection _connection;
-    private readonly ApplicationDbContext _dbContext;
-
-    public GetTodoItemByIdQueryHandlerTests()
-    {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
-        _dbContext = new ApplicationDbContext(options, Substitute.For<IPublisher>());
-        _dbContext.Database.EnsureCreated();
-    }
+    private readonly ITodoItemRepository _repository = Substitute.For<ITodoItemRepository>();
 
     [Fact]
     public async Task Handle_WhenItemExists_ReturnsDto()
     {
         var todoItem = TodoItem.Create("Write the Dorn scaffolding");
-        _dbContext.Items.Add(todoItem);
-        await _dbContext.SaveChangesAsync(CancellationToken.None);
+        _repository.GetByIdAsync(todoItem.Id, Arg.Any<CancellationToken>()).Returns(todoItem);
 
-        var handler = new GetTodoItemByIdQueryHandler(_dbContext);
+        var handler = new GetTodoItemByIdQueryHandler(_repository);
 
         var result = await handler.Handle(
             new GetTodoItemByIdQuery(todoItem.Id),
@@ -47,7 +30,11 @@ public sealed class GetTodoItemByIdQueryHandlerTests : IDisposable
     [Fact]
     public async Task Handle_WhenItemDoesNotExist_ReturnsNull()
     {
-        var handler = new GetTodoItemByIdQueryHandler(_dbContext);
+        _repository
+            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((TodoItem?)null);
+
+        var handler = new GetTodoItemByIdQueryHandler(_repository);
 
         var result = await handler.Handle(
             new GetTodoItemByIdQuery(Guid.NewGuid()),
@@ -55,11 +42,5 @@ public sealed class GetTodoItemByIdQueryHandlerTests : IDisposable
         );
 
         Assert.Null(result);
-    }
-
-    public void Dispose()
-    {
-        _dbContext.Dispose();
-        _connection.Dispose();
     }
 }

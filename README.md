@@ -47,7 +47,7 @@ dotnet dorn run
 | `--IncludeTests` | `true` | `bool` | Includes the generated test projects |
 
 > [!IMPORTANT]
-> `--Auth custom` requires `--Orm efcore`. The custom user store and its migrations do not exist under Dapper — generating that combination is rejected.
+> `--Auth custom` requires `--Orm efcore`. The custom user store and its migrations do not exist under Dapper — that combination generates but fails to build immediately, with a `#error` pointing at this constraint.
 
 ```bash
 dotnet new dorn-webapi -n Acme.Orders \

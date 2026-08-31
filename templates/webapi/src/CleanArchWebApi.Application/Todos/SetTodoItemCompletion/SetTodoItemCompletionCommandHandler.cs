@@ -3,16 +3,16 @@ namespace CleanArchWebApi.Application.Todos.SetTodoItemCompletion;
 public sealed class SetTodoItemCompletionCommandHandler
     : IRequestHandler<SetTodoItemCompletionCommand, bool>
 {
-    private readonly IApplicationDbContext _dbContext;
+    private readonly ITodoItemRepository _repository;
 
-    public SetTodoItemCompletionCommandHandler(IApplicationDbContext dbContext)
+    public SetTodoItemCompletionCommandHandler(ITodoItemRepository repository)
     {
-        _dbContext = dbContext;
+        _repository = repository;
     }
 
     public async Task<bool> Handle(SetTodoItemCompletionCommand request, CancellationToken ct)
     {
-        var todoItem = await _dbContext.Items.FindAsync([request.Id], ct);
+        var todoItem = await _repository.GetByIdAsync(request.Id, ct);
         if (todoItem is null)
         {
             return false;
@@ -27,7 +27,8 @@ public sealed class SetTodoItemCompletionCommandHandler
             todoItem.MarkIncomplete();
         }
 
-        await _dbContext.SaveChangesAsync(ct);
+        _repository.Update(todoItem);
+        await _repository.SaveChangesAsync(ct);
 
         return true;
     }

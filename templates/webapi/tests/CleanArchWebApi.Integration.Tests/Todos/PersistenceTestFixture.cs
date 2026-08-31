@@ -1,3 +1,4 @@
+#if (UseEfCore)
 #if (UseSqlServer)
 using Testcontainers.MsSql;
 #elif (UsePostgres)
@@ -71,3 +72,4 @@ public sealed class PersistenceTestFixture : IAsyncLifetime
 #endif
     }
 }
+#endif
