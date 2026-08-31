@@ -48,4 +48,9 @@
   <PropertyGroup Condition="'$(UseAuth)' == 'True' OR '$(UseAuth)' == 'true'">
     <DefineConstants>$(DefineConstants);UseAuth</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup
+    Condition="('$(UseCustomAuth)' == 'True' OR '$(UseCustomAuth)' == 'true') AND ('$(UseDapper)' == 'True' OR '$(UseDapper)' == 'true')"
+  >
+    <DefineConstants>$(DefineConstants);UseCustomAuthWithDapper</DefineConstants>
+  </PropertyGroup>
 </Project>

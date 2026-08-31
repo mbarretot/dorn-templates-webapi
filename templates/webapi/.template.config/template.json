@@ -76,7 +76,8 @@
     },
     "UseCustomAuth": { "type": "computed", "value": "(Auth == \"custom\")" },
     "UseAzureAdAuth": { "type": "computed", "value": "(Auth == \"azure-ad\")" },
-    "UseAuth": { "type": "computed", "value": "(UseCustomAuth || UseAzureAdAuth)" }
+    "UseAuth": { "type": "computed", "value": "(UseCustomAuth || UseAzureAdAuth)" },
+    "UseCustomAuthWithDapper": { "type": "computed", "value": "(UseCustomAuth && UseDapper)" }
   },
   "sources": [
     {
