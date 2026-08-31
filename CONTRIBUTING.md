@@ -49,6 +49,7 @@ dotnet test tests/Dorn.Templates.WebApi.Tests/Dorn.Templates.WebApi.Tests.csproj
 - Package: `Dorn.Templates.WebApi`
 - Tags: push `v<version>` to trigger NuGet Trusted Publishing
 - Local builds: use non-release fallback versions and are never published
+- Move the relevant entries from [CHANGELOG.md](CHANGELOG.md)'s `[Unreleased]` section into a new `[<version>]` section as part of cutting the release
 
 ## ✅ Conventions
 

@@ -56,6 +56,11 @@ dotnet new dorn-webapi -n Acme.Orders \
   --Orchestrator docker-compose
 ```
 
+### 💾 `Orm=dapper` support level
+
+- **`--DatabaseProvider sqlite`**: fully supported — schema bootstrap on startup, full CRUD through `ITodoItemRepository`, and the same Application/Integration/Functional test coverage as EF Core.
+- **`--DatabaseProvider sqlserver` / `postgres`**: generates and builds. `Integration.Tests` runs the same Testcontainers-backed round trip as EF Core's `PersistenceTestFixture.cs` (see `DapperTodoItemRepositoryTests.cs`). The HTTP-tier (`Functional.Tests`) is the one gap: it only swaps to a local SQLite file the way the EF Core partial does, and Dapper's connection type is fixed per provider at generation time, so that swap only works for `sqlite` — exercising the full HTTP pipeline against a real SQL Server/PostgreSQL instance needs its own Testcontainers-backed `WebApplicationFactory`, which doesn't exist yet for Dapper.
+
 ## 🛠️ Work on the template
 
 1. Read the [contributor guide](CONTRIBUTING.md).
