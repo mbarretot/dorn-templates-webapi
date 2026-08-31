@@ -25,4 +25,8 @@ public sealed partial class TodoWebApplicationFactory
             );
         });
     }
+
+    private partial Task InitializePersistenceAsync() => Task.CompletedTask;
+
+    private partial Task DisposePersistenceAsync() => Task.CompletedTask;
 }

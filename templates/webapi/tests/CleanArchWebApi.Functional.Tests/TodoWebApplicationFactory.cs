@@ -4,12 +4,10 @@ using CleanArchWebApi.Functional.Tests.Auth;
 
 namespace CleanArchWebApi.Functional.Tests;
 
-/// <summary>
-/// Uses a unique SQLite temp file for the HTTP pipeline tier; this avoids Windows locking races and stays provider-independent.
-/// ConfigurePersistence is ORM-specific and lives in a sibling partial (TodoWebApplicationFactory.EfCore.cs
-/// or TodoWebApplicationFactory.Dapper.cs), selected by template.json's exclude rules.
-/// </summary>
-public sealed partial class TodoWebApplicationFactory : WebApplicationFactory<Program>
+/// <summary>ConfigurePersistence/InitializePersistenceAsync/DisposePersistenceAsync are implemented per ORM/provider in sibling partials.</summary>
+public sealed partial class TodoWebApplicationFactory
+    : WebApplicationFactory<Program>,
+        IAsyncLifetime
 {
     private readonly string _databasePath = Path.Combine(
         Path.GetTempPath(),
@@ -29,6 +27,14 @@ public sealed partial class TodoWebApplicationFactory : WebApplicationFactory<Pr
     }
 
     partial void ConfigurePersistence(IWebHostBuilder builder);
+
+    Task IAsyncLifetime.InitializeAsync() => InitializePersistenceAsync();
+
+    private partial Task InitializePersistenceAsync();
+
+    Task IAsyncLifetime.DisposeAsync() => DisposePersistenceAsync();
+
+    private partial Task DisposePersistenceAsync();
 
     protected override void Dispose(bool disposing)
     {

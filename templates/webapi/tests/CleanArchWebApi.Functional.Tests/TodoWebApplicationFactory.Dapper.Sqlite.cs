@@ -5,13 +5,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace CleanArchWebApi.Functional.Tests;
 
-/// <summary>
-/// DapperContext's connection type is baked in per DatabaseProvider at generation time, so
-/// unlike EF Core this HTTP tier can't just swap to a local SQLite file for any provider — this
-/// partial only ships for Orm=dapper + DatabaseProvider=sqlite (see template.json exclude rules).
-/// SqlServer/Postgres + Dapper needs a Testcontainers-backed factory instead, tracked alongside
-/// the rest of the Dapper integration-test matrix.
-/// </summary>
 public sealed partial class TodoWebApplicationFactory
 {
     partial void ConfigurePersistence(IWebHostBuilder builder)
@@ -50,4 +43,8 @@ public sealed partial class TodoWebApplicationFactory
             "CREATE TABLE TodoItems (Id TEXT PRIMARY KEY, Title TEXT NOT NULL, IsComplete INTEGER NOT NULL)";
         command.ExecuteNonQuery();
     }
+
+    private partial Task InitializePersistenceAsync() => Task.CompletedTask;
+
+    private partial Task DisposePersistenceAsync() => Task.CompletedTask;
 }
