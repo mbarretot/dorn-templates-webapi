@@ -41,6 +41,9 @@
     "UseSqlite": { "type": "computed", "value": "(DatabaseProvider == \"sqlite\")" },
     "UseSqlServer": { "type": "computed", "value": "(DatabaseProvider == \"sqlserver\")" },
     "UsePostgres": { "type": "computed", "value": "(DatabaseProvider == \"postgres\")" },
+    "UseDapperWithSqlite": { "type": "computed", "value": "(UseDapper && UseSqlite)" },
+    "UseDapperWithSqlServer": { "type": "computed", "value": "(UseDapper && UseSqlServer)" },
+    "UseDapperWithPostgres": { "type": "computed", "value": "(UseDapper && UsePostgres)" },
     "Orchestrator": {
       "type": "parameter",
       "datatype": "choice",
@@ -107,7 +110,19 @@
         {
           "condition": "(!(UseDapper && UseSqlite))",
           "exclude": [
-            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.cs"
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.Sqlite.cs"
+          ]
+        },
+        {
+          "condition": "(!(UseDapper && UseSqlServer))",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.SqlServer.cs"
+          ]
+        },
+        {
+          "condition": "(!(UseDapper && UsePostgres))",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.Postgres.cs"
           ]
         },
         {

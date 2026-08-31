@@ -448,6 +448,30 @@ public class WebApiTemplateGenerationTests
         );
     }
 
+    /// <summary>Catches compound And/Or Condition attributes left unresolved by generation, which previously caused a Testcontainers PackageReference/PackageVersion mismatch (NU1010).</summary>
+    [Theory]
+    [InlineData("sqlserver")]
+    [InlineData("postgres")]
+    public async Task GenerateAndBuild_DornWebApiTemplateWithDapperAndRealProvider_ProducesBuildableSolution(
+        string databaseProvider
+    )
+    {
+        await GenerateBuildAndCleanupAsync(
+            $"DornDapper{databaseProvider}App",
+            async (outputDirectory, slnPath) =>
+            {
+                var buildResult = await BuildSupport.RunDotnetBuildAsync(slnPath);
+                AssertBuildSucceeded(buildResult);
+            },
+            "--Orm",
+            "dapper",
+            "--DatabaseProvider",
+            databaseProvider,
+            "--Orchestrator",
+            "none"
+        );
+    }
+
     /// <summary>Catches migration namespace collisions, bad #if/Condition/rename modifiers, and stray //#if markers in appsettings.json.</summary>
     [Fact]
     public async Task GenerateAndBuild_DornWebApiTemplateWithSqlServer_ProducesBuildableSolution()
