@@ -98,6 +98,18 @@
           "exclude": ["src/CleanArchWebApi.Infrastructure/Repositories/Dapper/**"]
         },
         {
+          "condition": "(UseDapper)",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.EfCore.cs"
+          ]
+        },
+        {
+          "condition": "(!(UseDapper && UseSqlite))",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.cs"
+          ]
+        },
+        {
           "condition": "(UseSqlServer)",
           "rename": {
             "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/": "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/"

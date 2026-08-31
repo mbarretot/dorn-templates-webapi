@@ -1,3 +1,4 @@
+#if (UseEfCore)
 namespace CleanArchWebApi.Integration.Tests.Todos;
 
 /// <summary>Persists and reloads through the real DbContext (see PersistenceTestFixture).</summary>
@@ -28,3 +29,4 @@ public sealed class TodoItemPersistenceTests : IClassFixture<PersistenceTestFixt
         Assert.False(reloaded.IsComplete);
     }
 }
+#endif

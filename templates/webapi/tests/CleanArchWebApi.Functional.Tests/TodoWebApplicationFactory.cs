@@ -6,8 +6,10 @@ namespace CleanArchWebApi.Functional.Tests;
 
 /// <summary>
 /// Uses a unique SQLite temp file for the HTTP pipeline tier; this avoids Windows locking races and stays provider-independent.
+/// ConfigurePersistence is ORM-specific and lives in a sibling partial (TodoWebApplicationFactory.EfCore.cs
+/// or TodoWebApplicationFactory.Dapper.cs), selected by template.json's exclude rules.
 /// </summary>
-public sealed class TodoWebApplicationFactory : WebApplicationFactory<Program>
+public sealed partial class TodoWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _databasePath = Path.Combine(
         Path.GetTempPath(),
@@ -23,27 +25,10 @@ public sealed class TodoWebApplicationFactory : WebApplicationFactory<Program>
             .UseSetting("Jwt:Audience", AuthWebApplicationFactory.Audience)
             .UseSetting("Jwt:LifetimeMinutes", "60");
 #endif
-        builder.ConfigureServices(services =>
-        {
-            // AddDbContext appends config via Add, not TryAdd — removing only
-            // DbContextOptions<T> leaves Program.cs's original provider registered alongside
-            // this one, and EF Core throws seeing two providers. Remove both.
-            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
-            services.RemoveAll<IDbContextOptionsConfiguration<ApplicationDbContext>>();
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options
-                    .UseSqlite($"Data Source={_databasePath}")
-                    // In a --database sqlserver generation, the checked-in migrations were
-                    // snapshotted against SQL Server, so EF's model differ flags a false
-                    // "pending changes" warning when evaluated against SQLite. Documented
-                    // suppression: https://aka.ms/efcore-docs-pending-changes.
-                    .ConfigureWarnings(warnings =>
-                        warnings.Ignore(RelationalEventId.PendingModelChangesWarning)
-                    )
-            );
-        });
+        ConfigurePersistence(builder);
     }
+
+    partial void ConfigurePersistence(IWebHostBuilder builder);
 
     protected override void Dispose(bool disposing)
     {

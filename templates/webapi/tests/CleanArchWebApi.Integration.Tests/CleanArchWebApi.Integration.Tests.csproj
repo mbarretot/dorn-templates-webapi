@@ -11,6 +11,11 @@
 
   <ItemGroup>
     <PackageReference Include="Dorn.Messaging.Contracts" />
+    <!-- Builds a real IConfiguration for DapperTodoItemRepositoryTests. -->
+    <PackageReference
+      Include="Microsoft.Extensions.Configuration"
+      Condition="'$(UseDapper)' == 'True'"
+    />
     <!-- Unconditional: this test project itself is only generated when UseSqlite is one of the
          possible provider selections at template-authoring time, but its DbContextOptionsBuilder
          call is provider-conditional (#if in PersistenceTestFixture.cs); declared unconditionally
