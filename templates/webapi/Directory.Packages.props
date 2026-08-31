@@ -13,13 +13,13 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Persistence -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
     <!-- Pulls SQLitePCLRaw.lib.e_sqlite3 2.1.11, flagged by GHSA-2m69-gcr7-jv3q (bundled SQLite older than 3.50.2).
              No patched SQLitePCLRaw version exists yet (first_patched_version is null upstream); tracked, not fixable via override.
              Always present (unconditional): CleanArchWebApi.Application.Tests references it regardless of
              DatabaseProvider, since tests run against SQLite even when the app targets SQL Server. -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11" />
     <!-- Declared unconditionally so central package management validates the conditional reference; restore remains condition-controlled. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.9" />
     <!-- Npgsql's EF provider tracks EF Core's major.minor, not its exact patch — 10.0.3 is the
@@ -32,7 +32,7 @@
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Npgsql" Version="10.0.3" />
     <!-- Web -->
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
     <!-- Transitive override: Microsoft.AspNetCore.OpenApi 10.0.9 still pulls Microsoft.OpenApi 2.0.0,
              vulnerable to GHSA-v5pm-xwqc-g5wc (stack overflow parsing circular schema refs), patched in 2.7.5+. -->
     <PackageVersion Include="Microsoft.OpenApi" Version="2.10.0" />
@@ -58,11 +58,11 @@
       Include="Microsoft.Extensions.DependencyInjection.Abstractions"
       Version="10.0.9"
     />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
     <!-- Concrete DI container (not just abstractions), needed by MediatorPublishTests to build
              a real IServiceProvider. -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
     <!-- Concrete configuration builder (not just abstractions), needed by the Dapper repository
              integration test to build a real IConfiguration backed by AddInMemoryCollection. -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.9" />
@@ -88,15 +88,15 @@
       Version="4.11.0"
       Condition="'$(UsePostgres)' == 'True'"
     />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />
   </ItemGroup>
   <ItemGroup>
     <!-- Aspire orchestration / ServiceDefaults: health checks, service discovery, resilience. -->
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.4.6" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.7.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.7.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.9.0" />
   </ItemGroup>
   <ItemGroup>
     <!-- Observability: referenced unconditionally by WebApi (all orchestrators). -->
