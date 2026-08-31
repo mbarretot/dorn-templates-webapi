@@ -46,4 +46,35 @@ public sealed class TodoItemTests
 
         Assert.Empty(todoItem.DomainEvents);
     }
+
+    [Fact]
+    public void Rename_UpdatesTitle()
+    {
+        var todoItem = TodoItem.Create(Title);
+
+        todoItem.Rename("Ship the release");
+
+        Assert.Equal("Ship the release", todoItem.Title);
+    }
+
+    [Fact]
+    public void MarkComplete_SetsIsCompleteTrue()
+    {
+        var todoItem = TodoItem.Create(Title);
+
+        todoItem.MarkComplete();
+
+        Assert.True(todoItem.IsComplete);
+    }
+
+    [Fact]
+    public void MarkIncomplete_SetsIsCompleteFalse()
+    {
+        var todoItem = TodoItem.Create(Title);
+        todoItem.MarkComplete();
+
+        todoItem.MarkIncomplete();
+
+        Assert.False(todoItem.IsComplete);
+    }
 }

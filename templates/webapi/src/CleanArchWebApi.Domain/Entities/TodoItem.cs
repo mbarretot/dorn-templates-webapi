@@ -26,4 +26,19 @@ public class TodoItem : AggregateRoot
             IsComplete = isComplete,
         };
     }
+
+    public void Rename(string title)
+    {
+        Title = title;
+    }
+
+    public void MarkComplete()
+    {
+        IsComplete = true;
+    }
+
+    public void MarkIncomplete()
+    {
+        IsComplete = false;
+    }
 }
