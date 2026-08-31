@@ -2,7 +2,7 @@
 
 [![Scaffolded with Dorn](https://img.shields.io/badge/scaffolded_with-Dorn-1A1A1A?style=flat-square)](https://github.com/mbarretot/dorn)
 
-A Clean Architecture Minimal API with CQRS and your selected persistence and orchestration stack.
+A Clean Architecture Minimal API with CQRS and the persistence, authentication, and local runtime choices selected at generation time.
 
 ## ⚡ Start here
 
@@ -12,7 +12,7 @@ dotnet build
 dotnet dorn run
 ```
 
-Then verify all generated test tiers:
+Then run every generated test tier:
 
 ```bash
 dotnet dorn test
@@ -24,11 +24,11 @@ dotnet dorn test
 | --- | --- |
 | `Domain` | Entities, aggregates, and domain events |
 | `Application` | Commands, queries, handlers, validation, and ports |
-| `Infrastructure` | Selected EF Core or Dapper persistence |
+| `Infrastructure` | EF Core or Dapper persistence |
 | `WebApi` | Minimal API endpoints and composition root |
-| `AppHost` and `ServiceDefaults` | Aspire orchestration when selected |
+| `AppHost` and `ServiceDefaults` | Aspire runtime support when selected |
 
-Dependencies point inward. Architecture tests enforce the boundaries.
+Dependencies point inward; architecture tests enforce the boundary rules.
 
 ## ⚙️ Generated choices
 
@@ -39,7 +39,7 @@ Dependencies point inward. Architecture tests enforce the boundaries.
 | Orchestration | `aspire` | `aspire`, `docker-compose`, `none` |
 | Authentication | `none` | `none`, `custom`, `azure-ad` |
 
-These choices are fixed in the generated source. Custom authentication requires EF Core.
+These choices are fixed when the project is generated. Custom authentication requires EF Core.
 
 ## 🧪 Test tiers
 
@@ -50,7 +50,7 @@ These choices are fixed in the generated source. Custom authentication requires 
 | Architecture | Layer dependency rules |
 | Functional | HTTP request pipeline |
 
-SQLite needs no Docker. SQL Server and PostgreSQL integration tests use Testcontainers on supported hosts.
+SQLite needs no Docker. SQL Server and PostgreSQL tests start their dependencies with Testcontainers on supported hosts.
 
 ## ⌨️ Project CLI
 
@@ -63,7 +63,7 @@ SQLite needs no Docker. SQL Server and PostgreSQL integration tests use Testcont
 
 ## 🔄 CI
 
-`.github/workflows/ci.yml` runs the generated test matrix on Ubuntu and Windows. Container-backed provider tests run on Linux.
+`.github/workflows/ci.yml` runs the generated test matrix on Ubuntu and Windows; container-backed provider tests run on Linux.
 
 ## 📚 Details
 
