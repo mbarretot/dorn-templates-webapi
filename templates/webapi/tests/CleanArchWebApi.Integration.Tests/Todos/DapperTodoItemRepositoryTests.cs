@@ -1,4 +1,9 @@
 #if (UseDapper)
+#if (UseSqlServer)
+using Testcontainers.MsSql;
+#elif (UsePostgres)
+using Testcontainers.PostgreSql;
+#endif
 using CleanArchWebApi.Domain.Common.Interfaces;
 using CleanArchWebApi.Domain.Events;
 using CleanArchWebApi.Infrastructure.Repositories.Dapper;
@@ -8,19 +13,32 @@ namespace CleanArchWebApi.Integration.Tests.Todos;
 
 /// <summary>
 /// Exercises the Dapper repository's schema bootstrap, unit-of-work, and domain-event
-/// publishing against a real SQLite file.
+/// publishing against the selected real provider (Testcontainers SQL Server/PostgreSQL, or a
+/// temp-file SQLite database).
 /// </summary>
 public sealed class DapperTodoItemRepositoryTests : IAsyncLifetime
 {
+#if (UseSqlite)
     private readonly string _databasePath = Path.Combine(
         Path.GetTempPath(),
         $"{Guid.NewGuid()}.db"
     );
+#elif (UseSqlServer)
+    // Same image tag as docker-compose.SqlServer.yml, kept in sync deliberately.
+    private readonly MsSqlContainer _container = new MsSqlBuilder(
+        "mcr.microsoft.com/mssql/server:2022-latest"
+    ).Build();
+#elif (UsePostgres)
+    // Same image tag as docker-compose.Postgres.yml, kept in sync deliberately.
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17").Build();
+#endif
+
     private readonly IPublisher _publisher = Substitute.For<IPublisher>();
     private ITodoItemRepository _repository = null!;
 
     public async Task InitializeAsync()
     {
+#if (UseSqlite)
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(
                 new Dictionary<string, string?>
@@ -29,6 +47,29 @@ public sealed class DapperTodoItemRepositoryTests : IAsyncLifetime
                 }
             )
             .Build();
+#elif (UseSqlServer)
+        await _container.StartAsync();
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["ConnectionStrings:CleanArchWebApi"] = _container.GetConnectionString(),
+                }
+            )
+            .Build();
+#elif (UsePostgres)
+        await _container.StartAsync();
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["ConnectionStrings:CleanArchWebApi"] = _container.GetConnectionString(),
+                }
+            )
+            .Build();
+#endif
 
         var context = new DapperContext(configuration);
         await context.InitializeSchemaAsync();
@@ -68,14 +109,21 @@ public sealed class DapperTodoItemRepositoryTests : IAsyncLifetime
         Assert.Null(reloaded);
     }
 
-    public Task DisposeAsync()
+    public async Task DisposeAsync()
     {
+#if (UseSqlite)
+        // Microsoft.Data.Sqlite pools native connections by file path, so disposing can leave
+        // the database locked on Windows until SqliteConnection.ClearAllPools() is called.
         SqliteConnection.ClearAllPools();
         if (File.Exists(_databasePath))
         {
             File.Delete(_databasePath);
         }
-        return Task.CompletedTask;
+#elif (UseSqlServer)
+        await _container.DisposeAsync();
+#elif (UsePostgres)
+        await _container.DisposeAsync();
+#endif
     }
 }
 #endif
