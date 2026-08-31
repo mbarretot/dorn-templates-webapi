@@ -18,6 +18,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - `GET /api/todos/{id}`, `PUT /api/todos/{id}`, `PATCH /api/todos/{id}/complete`, and `DELETE /api/todos/{id}` — the sample Todo feature previously only supported create and list.
 - A baseline `/health` endpoint for `Orchestrator=docker-compose` and `Orchestrator=none` (previously only `Orchestrator=aspire` had one, via `ServiceDefaults`).
+- `Integration.Tests` coverage for the Dapper repository against SQL Server and PostgreSQL via Testcontainers, matching EF Core's existing `PersistenceTestFixture.cs` pattern.
+
+### Testing
+
+- Test coverage locking in the documented `NotSupportedException` contract for Dapper's `FindAsync`/`AnyAsync`/`CountAsync`.
 
 ## [1.0.5] and earlier
 
