@@ -23,6 +23,22 @@
     <UseAuth Condition="'$(UseAuth)' == ''">False</UseAuth>
   </PropertyGroup>
 
+  <!-- Mirrors the computed template.json symbols of the same name. -->
+  <PropertyGroup>
+    <UseDapperWithSqlite
+      Condition="('$(UseDapper)' == 'True' OR '$(UseDapper)' == 'true') AND ('$(UseSqlite)' == 'True' OR '$(UseSqlite)' == 'true')"
+      >True</UseDapperWithSqlite>
+    <UseDapperWithSqlite Condition="'$(UseDapperWithSqlite)' == ''">False</UseDapperWithSqlite>
+    <UseDapperWithSqlServer
+      Condition="('$(UseDapper)' == 'True' OR '$(UseDapper)' == 'true') AND ('$(UseSqlServer)' == 'True' OR '$(UseSqlServer)' == 'true')"
+      >True</UseDapperWithSqlServer>
+    <UseDapperWithSqlServer Condition="'$(UseDapperWithSqlServer)' == ''">False</UseDapperWithSqlServer>
+    <UseDapperWithPostgres
+      Condition="('$(UseDapper)' == 'True' OR '$(UseDapper)' == 'true') AND ('$(UsePostgres)' == 'True' OR '$(UsePostgres)' == 'true')"
+      >True</UseDapperWithPostgres>
+    <UseDapperWithPostgres Condition="'$(UseDapperWithPostgres)' == ''">False</UseDapperWithPostgres>
+  </PropertyGroup>
+
   <!-- In-place builds need C# symbols because generation-time #if directives are not evaluated by MSBuild. -->
   <PropertyGroup Condition="'$(UseEfCore)' == 'True' OR '$(UseEfCore)' == 'true'">
     <DefineConstants>$(DefineConstants);UseEfCore</DefineConstants>
@@ -47,5 +63,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseAuth)' == 'True' OR '$(UseAuth)' == 'true'">
     <DefineConstants>$(DefineConstants);UseAuth</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup
+    Condition="('$(UseCustomAuth)' == 'True' OR '$(UseCustomAuth)' == 'true') AND ('$(UseDapper)' == 'True' OR '$(UseDapper)' == 'true')"
+  >
+    <DefineConstants>$(DefineConstants);UseCustomAuthWithDapper</DefineConstants>
   </PropertyGroup>
 </Project>

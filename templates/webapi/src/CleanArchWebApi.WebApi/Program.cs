@@ -9,6 +9,9 @@ using FluentValidation;
 using CleanArchWebApi.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 #endif
+#if (UseDapper)
+using CleanArchWebApi.Infrastructure.Repositories.Dapper;
+#endif
 #if (UseCustomAuth)
 using CleanArchWebApi.Domain.Users;
 using CleanArchWebApi.Infrastructure.Auth;
@@ -23,6 +26,11 @@ builder.AddObservability();
 
 #if (UseAspire)
 builder.AddServiceDefaults();
+#endif
+#if (!UseAspire)
+// Aspire's ServiceDefaults wires this up already; every other orchestrator needs its own
+// baseline liveness/readiness endpoint for container healthchecks and monitoring.
+builder.Services.AddHealthChecks();
 #endif
 
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -74,6 +82,17 @@ using (var scope = app.Services.CreateScope())
 #endif
 }
 #endif
+#if (UseDapper)
+// Dapper has no migration story of its own, so bootstrap the schema on startup the same
+// way the EF Core branch above does via MigrateAsync. Fine for this scaffold's default
+// (SQLite, single instance); swap for a real migration tool in production setups with
+// concurrent instances.
+using (var scope = app.Services.CreateScope())
+{
+    var dapperContext = scope.ServiceProvider.GetRequiredService<DapperContext>();
+    await dapperContext.InitializeSchemaAsync();
+}
+#endif
 
 if (app.Environment.IsDevelopment())
 {
@@ -98,6 +117,9 @@ app.MapAuthEndpoints();
 #endif
 #if (UseAspire)
 app.MapDefaultEndpoints();
+#endif
+#if (!UseAspire)
+app.MapHealthChecks("/health");
 #endif
 
 app.Run();

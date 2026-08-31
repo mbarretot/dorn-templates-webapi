@@ -419,6 +419,59 @@ public class WebApiTemplateGenerationTests
         );
     }
 
+    /// <summary>
+    /// Auth=custom requires the EF Core-backed AppUser store; Orm=dapper has no equivalent yet
+    /// (README, "IMPORTANT" note). Generation itself still succeeds — the incompatibility is
+    /// caught at build time by a #error guard in the Domain project — so this asserts the build
+    /// fails with that specific, actionable message rather than an unrelated compiler error.
+    /// </summary>
+    [Fact]
+    public async Task GenerateAndBuild_DornWebApiTemplateWithCustomAuthAndDapper_FailsBuildWithActionableError()
+    {
+        await GenerateBuildAndCleanupAsync(
+            "DornCustomAuthDapperApp",
+            async (outputDirectory, slnPath) =>
+            {
+                var buildResult = await BuildSupport.RunDotnetBuildAsync(slnPath);
+
+                Assert.NotEqual(0, buildResult.ExitCode);
+                Assert.Contains(
+                    "Auth=custom requires Orm=efcore",
+                    buildResult.StdOut,
+                    StringComparison.Ordinal
+                );
+            },
+            "--Auth",
+            "custom",
+            "--Orm",
+            "dapper"
+        );
+    }
+
+    /// <summary>Catches compound And/Or Condition attributes left unresolved by generation, which previously caused a Testcontainers PackageReference/PackageVersion mismatch (NU1010).</summary>
+    [Theory]
+    [InlineData("sqlserver")]
+    [InlineData("postgres")]
+    public async Task GenerateAndBuild_DornWebApiTemplateWithDapperAndRealProvider_ProducesBuildableSolution(
+        string databaseProvider
+    )
+    {
+        await GenerateBuildAndCleanupAsync(
+            $"DornDapper{databaseProvider}App",
+            async (outputDirectory, slnPath) =>
+            {
+                var buildResult = await BuildSupport.RunDotnetBuildAsync(slnPath);
+                AssertBuildSucceeded(buildResult);
+            },
+            "--Orm",
+            "dapper",
+            "--DatabaseProvider",
+            databaseProvider,
+            "--Orchestrator",
+            "none"
+        );
+    }
+
     /// <summary>Catches migration namespace collisions, bad #if/Condition/rename modifiers, and stray //#if markers in appsettings.json.</summary>
     [Fact]
     public async Task GenerateAndBuild_DornWebApiTemplateWithSqlServer_ProducesBuildableSolution()

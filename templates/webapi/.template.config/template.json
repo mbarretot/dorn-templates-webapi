@@ -36,11 +36,14 @@
         { "choice": "postgres", "description": "PostgreSQL, run via an Aspire-managed container." }
       ],
       "defaultValue": "sqlite",
-      "description": "The EF Core database provider used for persistence."
+      "description": "The database provider used for persistence."
     },
     "UseSqlite": { "type": "computed", "value": "(DatabaseProvider == \"sqlite\")" },
     "UseSqlServer": { "type": "computed", "value": "(DatabaseProvider == \"sqlserver\")" },
     "UsePostgres": { "type": "computed", "value": "(DatabaseProvider == \"postgres\")" },
+    "UseDapperWithSqlite": { "type": "computed", "value": "(UseDapper && UseSqlite)" },
+    "UseDapperWithSqlServer": { "type": "computed", "value": "(UseDapper && UseSqlServer)" },
+    "UseDapperWithPostgres": { "type": "computed", "value": "(UseDapper && UsePostgres)" },
     "Orchestrator": {
       "type": "parameter",
       "datatype": "choice",
@@ -76,7 +79,8 @@
     },
     "UseCustomAuth": { "type": "computed", "value": "(Auth == \"custom\")" },
     "UseAzureAdAuth": { "type": "computed", "value": "(Auth == \"azure-ad\")" },
-    "UseAuth": { "type": "computed", "value": "(UseCustomAuth || UseAzureAdAuth)" }
+    "UseAuth": { "type": "computed", "value": "(UseCustomAuth || UseAzureAdAuth)" },
+    "UseCustomAuthWithDapper": { "type": "computed", "value": "(UseCustomAuth && UseDapper)" }
   },
   "sources": [
     {
@@ -96,6 +100,30 @@
         {
           "condition": "(UseEfCore)",
           "exclude": ["src/CleanArchWebApi.Infrastructure/Repositories/Dapper/**"]
+        },
+        {
+          "condition": "(UseDapper)",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.EfCore.cs"
+          ]
+        },
+        {
+          "condition": "(!(UseDapper && UseSqlite))",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.Sqlite.cs"
+          ]
+        },
+        {
+          "condition": "(!(UseDapper && UseSqlServer))",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.SqlServer.cs"
+          ]
+        },
+        {
+          "condition": "(!(UseDapper && UsePostgres))",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.Postgres.cs"
+          ]
         },
         {
           "condition": "(UseSqlServer)",

@@ -7,10 +7,15 @@ namespace CleanArchWebApi.Infrastructure.Repositories.Dapper;
 public class TodoItemRepository : ITodoItemRepository
 {
     private readonly DapperContext _context;
+    private readonly IPublisher _publisher;
+    private readonly List<TodoItem> _added = [];
+    private readonly List<TodoItem> _updated = [];
+    private readonly List<TodoItem> _removed = [];
 
-    public TodoItemRepository(DapperContext context)
+    public TodoItemRepository(DapperContext context, IPublisher publisher)
     {
         _context = context;
+        _publisher = publisher;
     }
 
     public async Task<TodoItem?> GetByIdAsync(
@@ -70,46 +75,77 @@ public class TodoItemRepository : ITodoItemRepository
         );
     }
 
-    public void Add(TodoItem entity)
+    // Deferred to SaveChangesAsync, matching EF Core's unit-of-work semantics (and the
+    // domain-event publishing that ApplicationDbContext.SaveChangesAsync already relies on).
+    public void Add(TodoItem entity) => _added.Add(entity);
+
+    public void Update(TodoItem entity) => _updated.Add(entity);
+
+    public void Remove(TodoItem entity) => _removed.Add(entity);
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        using var connection = _context.CreateConnection();
-        connection.Execute(
-            "INSERT INTO TodoItems (Id, Title, IsComplete) VALUES (@Id, @Title, @IsComplete)",
-            new
+        if (_added.Count == 0 && _updated.Count == 0 && _removed.Count == 0)
+        {
+            return;
+        }
+
+        using (var connection = _context.CreateConnection())
+        {
+            foreach (var entity in _added)
             {
-                Id = entity.Id.ToString(),
-                entity.Title,
-                IsComplete = entity.IsComplete,
+                connection.Execute(
+                    "INSERT INTO TodoItems (Id, Title, IsComplete) VALUES (@Id, @Title, @IsComplete)",
+                    new
+                    {
+                        Id = entity.Id.ToString(),
+                        entity.Title,
+                        entity.IsComplete,
+                    }
+                );
             }
-        );
-    }
 
-    public void Update(TodoItem entity)
-    {
-        using var connection = _context.CreateConnection();
-        connection.Execute(
-            "UPDATE TodoItems SET Title = @Title, IsComplete = @IsComplete WHERE Id = @Id",
-            new
+            foreach (var entity in _updated)
             {
-                Id = entity.Id.ToString(),
-                entity.Title,
-                IsComplete = entity.IsComplete,
+                connection.Execute(
+                    "UPDATE TodoItems SET Title = @Title, IsComplete = @IsComplete WHERE Id = @Id",
+                    new
+                    {
+                        Id = entity.Id.ToString(),
+                        entity.Title,
+                        entity.IsComplete,
+                    }
+                );
             }
-        );
-    }
 
-    public void Remove(TodoItem entity)
-    {
-        using var connection = _context.CreateConnection();
-        connection.Execute(
-            "DELETE FROM TodoItems WHERE Id = @Id",
-            new { Id = entity.Id.ToString() }
-        );
-    }
+            foreach (var entity in _removed)
+            {
+                connection.Execute(
+                    "DELETE FROM TodoItems WHERE Id = @Id",
+                    new { Id = entity.Id.ToString() }
+                );
+            }
+        }
 
-    public Task SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
+        var entitiesWithEvents = _added
+            .Concat(_updated)
+            .Concat(_removed)
+            .Where(entity => entity.DomainEvents.Count > 0)
+            .ToList();
+        _added.Clear();
+        _updated.Clear();
+        _removed.Clear();
+
+        foreach (var entity in entitiesWithEvents)
+        {
+            var domainEvents = entity.DomainEvents.ToArray();
+            entity.ClearDomainEvents();
+
+            foreach (var domainEvent in domainEvents)
+            {
+                await _publisher.Publish(domainEvent, cancellationToken);
+            }
+        }
     }
 
     private class TodoItemRow
@@ -120,7 +156,7 @@ public class TodoItemRepository : ITodoItemRepository
 
         public TodoItem ToEntity()
         {
-            return TodoItem.Create(Title);
+            return TodoItem.Rehydrate(Guid.Parse(Id), Title, IsComplete);
         }
     }
 }

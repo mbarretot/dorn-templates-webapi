@@ -1,6 +1,6 @@
 # Dorn Clean Architecture Web API Template
 
-Create a .NET 10 Clean Architecture Minimal API with CQRS, your choice of ORM and database provider, and optional Docker/Aspire orchestration.
+Create a .NET 10 Clean Architecture Minimal API with CQRS, your persistence stack, and an optional local runtime.
 
 ## 🚀 Create and run
 
@@ -26,13 +26,13 @@ dotnet dorn run
 
 | Option | Default | Effect |
 | --- | --- | --- |
-| `--Auth <none\|custom\|azure-ad>` | `none` | Authentication scheme for the generated API |
-| `--Orm <efcore\|dapper>` | `efcore` | The Object-Relational Mapper used for data access |
-| `--DatabaseProvider <sqlite\|sqlserver\|postgres>` | `sqlite` | The database provider used for persistence |
-| `--Orchestrator <aspire\|docker-compose\|none>` | `aspire` | Local orchestration approach for the generated service |
-| `--IncludeTests <bool>` | `true` | Includes the generated test projects |
+| `--Auth <none\|custom\|azure-ad>` | `none` | Authentication |
+| `--Orm <efcore\|dapper>` | `efcore` | Persistence style |
+| `--DatabaseProvider <sqlite\|sqlserver\|postgres>` | `sqlite` | Database |
+| `--Orchestrator <aspire\|docker-compose\|none>` | `aspire` | Local runtime |
+| `--IncludeTests <bool>` | `true` | Generated test projects |
 
 > [!IMPORTANT]
-> `--Auth custom` requires `--Orm efcore`. The custom user store and migrations do not exist under Dapper.
+> `--Auth custom` requires `--Orm efcore`; unsupported combinations stop at build time with an actionable error.
 
 [View source and full documentation](https://github.com/mbarretot/dorn-templates-webapi)

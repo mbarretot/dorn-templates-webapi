@@ -8,10 +8,42 @@
     <ProjectReference Include="..\..\src\CleanArchWebApi.WebApi\CleanArchWebApi.WebApi.csproj" />
   </ItemGroup>
 
+  <!-- Single-symbol conditions only: dotnet-new doesn't reliably strip compound And/Or conditions. -->
   <ItemGroup>
-    <!-- Unconditional: TodoWebApplicationFactory always forces SQLite, keeping this tier Docker-free. -->
+    <Compile Remove="TodoWebApplicationFactory.EfCore.cs" Condition="'$(UseDapper)' == 'True'" />
+    <Compile
+      Remove="TodoWebApplicationFactory.Dapper.Sqlite.cs"
+      Condition="'$(UseDapperWithSqlite)' != 'True'"
+    />
+    <Compile
+      Remove="TodoWebApplicationFactory.Dapper.SqlServer.cs"
+      Condition="'$(UseDapperWithSqlServer)' != 'True'"
+    />
+    <Compile
+      Remove="TodoWebApplicationFactory.Dapper.Postgres.cs"
+      Condition="'$(UseDapperWithPostgres)' != 'True'"
+    />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Unconditional: the EF Core partial always forces SQLite, keeping this tier Docker-free. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <!-- Builds a real IConfiguration for the Dapper partials' DapperContext override. -->
+    <PackageReference
+      Include="Microsoft.Extensions.Configuration"
+      Condition="'$(UseDapper)' == 'True'"
+    />
+    <!-- Only restored when Orm=dapper and DatabaseProvider=sqlserver — see ADR 0013. -->
+    <PackageReference
+      Include="Testcontainers.MsSql"
+      Condition="'$(UseDapperWithSqlServer)' == 'True'"
+    />
+    <!-- Only restored when Orm=dapper and DatabaseProvider=postgres — see ADR 0013. -->
+    <PackageReference
+      Include="Testcontainers.PostgreSql"
+      Condition="'$(UseDapperWithPostgres)' == 'True'"
+    />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">

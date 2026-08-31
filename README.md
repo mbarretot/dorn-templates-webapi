@@ -11,7 +11,7 @@
 
 </div>
 
-Production-ready Clean Architecture Web API with CQRS, layered structure, and Docker support.
+Generate a .NET 10 Minimal API with clean boundaries, CQRS, optional authentication, and a local runtime that fits your stack.
 
 ## 🚀 Quick start
 
@@ -29,25 +29,25 @@ dotnet dorn run
 
 ## ✨ Included
 
-- 🧱 Clean Architecture layering: Domain, Application, Infrastructure, WebApi
-- 🔁 CQRS via commands, queries, and handlers (`Dorn.Messaging.Contracts` / `Dorn.Messaging`)
-- 💾 EF Core or Dapper persistence over SQLite, SQL Server, or PostgreSQL
-- ☁️ Optional .NET Aspire orchestration or Docker Compose with local observability (Grafana, Loki, Prometheus, Tempo)
-- 🔐 Optional JWT authentication: self-issued custom tokens or Azure AD/Entra ID validation
-- 🧪 Application, Integration, Architecture, and Functional xUnit test tiers
+- Clean Architecture: Domain, Application, Infrastructure, and WebApi
+- CQRS commands, queries, and handlers via `Dorn.Messaging`
+- EF Core or Dapper with SQLite, SQL Server, or PostgreSQL
+- Aspire or Docker Compose, including local observability
+- Custom JWT or Microsoft Entra ID token validation
+- Application, Integration, Architecture, and Functional xUnit tests
 
 ## ⚙️ Template options
 
 | Option | Default | Choices | Effect |
 | --- | --- | --- | --- |
-| `--Auth` | `none` | `none`, `custom`, `azure-ad` | Authentication scheme for the generated API |
-| `--Orm` | `efcore` | `efcore`, `dapper` | The Object-Relational Mapper used for data access |
-| `--DatabaseProvider` | `sqlite` | `sqlite`, `sqlserver`, `postgres` | The database provider used for persistence |
-| `--Orchestrator` | `aspire` | `aspire`, `docker-compose`, `none` | Local orchestration approach for the generated service |
-| `--IncludeTests` | `true` | `bool` | Includes the generated test projects |
+| `--Auth` | `none` | `none`, `custom`, `azure-ad` | Authentication |
+| `--Orm` | `efcore` | `efcore`, `dapper` | Persistence style |
+| `--DatabaseProvider` | `sqlite` | `sqlite`, `sqlserver`, `postgres` | Database |
+| `--Orchestrator` | `aspire` | `aspire`, `docker-compose`, `none` | Local runtime |
+| `--IncludeTests` | `true` | `bool` | Generated test projects |
 
 > [!IMPORTANT]
-> `--Auth custom` requires `--Orm efcore`. The custom user store and its migrations do not exist under Dapper — generating that combination is rejected.
+> `--Auth custom` requires `--Orm efcore`. The template stops an unsupported combination at build time with an actionable `#error`.
 
 ```bash
 dotnet new dorn-webapi -n Acme.Orders \
@@ -56,8 +56,14 @@ dotnet new dorn-webapi -n Acme.Orders \
   --Orchestrator docker-compose
 ```
 
+### 💾 `Orm=dapper` support level
+
+- **SQLite**: schema bootstrap, full Todo CRUD, and all generated test tiers work without external services.
+- **SQL Server and PostgreSQL**: generation, build, integration, and functional tests are supported through Testcontainers.
+- Expression-based repository methods (`FindAsync`, `AnyAsync`, and `CountAsync`) deliberately throw `NotSupportedException` under Dapper. Add a dedicated repository method for a new query instead of relying on LINQ translation.
+
 ## 🛠️ Work on the template
 
 1. Read the [contributor guide](CONTRIBUTING.md).
-2. Run the focused tests for the files you changed.
+2. Run the focused tests for the affected template or pack/generate harness.
 3. Keep `.template.config/template.json`'s symbols and this README's option table in sync.

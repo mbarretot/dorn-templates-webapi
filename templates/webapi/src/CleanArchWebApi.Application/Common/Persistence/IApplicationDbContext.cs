@@ -6,8 +6,6 @@ namespace CleanArchWebApi.Application.Common.Persistence;
 
 public interface IApplicationDbContext
 {
-    DbSet<TodoItem> Items { get; }
-
 #if (UseCustomAuth)
     DbSet<AppUser> Users { get; }
 #endif
