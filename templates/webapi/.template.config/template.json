@@ -36,7 +36,7 @@
         { "choice": "postgres", "description": "PostgreSQL, run via an Aspire-managed container." }
       ],
       "defaultValue": "sqlite",
-      "description": "The EF Core database provider used for persistence."
+      "description": "The database provider used for persistence."
     },
     "UseSqlite": { "type": "computed", "value": "(DatabaseProvider == \"sqlite\")" },
     "UseSqlServer": { "type": "computed", "value": "(DatabaseProvider == \"sqlserver\")" },
