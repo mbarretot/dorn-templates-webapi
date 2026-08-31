@@ -47,6 +47,7 @@
       Include="Microsoft.EntityFrameworkCore.SqlServer"
       Condition="'$(UseEfCore)' == 'True' And '$(UseSqlServer)' == 'True'"
     />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference
       Include="Npgsql.EntityFrameworkCore.PostgreSQL"
       Condition="'$(UseEfCore)' == 'True' And '$(UsePostgres)' == 'True'"

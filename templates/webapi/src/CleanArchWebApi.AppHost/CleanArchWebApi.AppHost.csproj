@@ -11,6 +11,7 @@
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.SqlServer" Condition="'$(UseSqlServer)' == 'True'" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Condition="'$(UsePostgres)' == 'True'" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup>
