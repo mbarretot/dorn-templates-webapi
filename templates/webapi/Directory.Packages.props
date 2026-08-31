@@ -7,9 +7,9 @@
     <!-- Dorn's own packages - resolved from a local feed during development, from NuGet.org
              for end-user installs. See nuget.config, packages/Directory.Build.props (GitVersion), and
              docs/adr/0010-*.md and 0026-*.md. -->
-    <PackageVersion Include="Dorn.Messaging.Contracts" Version="1.0.1" />
-    <PackageVersion Include="Dorn.Messaging" Version="1.0.1" />
-    <PackageVersion Include="Dorn.SharedKernel" Version="1.0.1" />
+    <PackageVersion Include="Dorn.Messaging.Contracts" Version="1.0.5" />
+    <PackageVersion Include="Dorn.Messaging" Version="1.0.5" />
+    <PackageVersion Include="Dorn.SharedKernel" Version="1.0.5" />
   </ItemGroup>
   <ItemGroup>
     <!-- Persistence -->
@@ -71,7 +71,7 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
-    <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <PackageVersion Include="NSubstitute" Version="6.2.0" />
     <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.3" />
     <!-- Only CleanArchWebApi.Integration.Tests references this, and only when
          DatabaseProvider=sqlserver (see its conditional PackageReference) — it spins up a
@@ -92,7 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Aspire orchestration / ServiceDefaults: health checks, service discovery, resilience. -->
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.5.3" />
     <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.4.6" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
