@@ -4,7 +4,7 @@ All notable changes to the `Dorn.Templates.WebApi` package are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses the version pushed as a `v<version>` tag (see [CONTRIBUTING.md](CONTRIBUTING.md#-releases)).
 
-## [Unreleased]
+## [1.1.0]
 
 ### Fixed
 
