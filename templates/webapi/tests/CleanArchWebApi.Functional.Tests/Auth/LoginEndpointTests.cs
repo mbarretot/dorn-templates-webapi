@@ -39,7 +39,11 @@ public sealed class LoginEndpointTests : IClassFixture<AuthWebApplicationFactory
         );
         var badPasswordResponse = await _client.PostAsJsonAsync(
             "/auth/login",
-            new { Email = AuthWebApplicationFactory.DemoEmail, Password = "wrong-password-for-test" }
+            new
+            {
+                Email = AuthWebApplicationFactory.DemoEmail,
+                Password = "wrong-password-for-test",
+            }
         );
         var unknownEmailBody = await unknownEmailResponse.Content.ReadAsStringAsync();
         var badPasswordBody = await badPasswordResponse.Content.ReadAsStringAsync();

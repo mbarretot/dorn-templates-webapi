@@ -4,6 +4,12 @@ All notable changes to the `Dorn.Templates.WebApi` package are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses the version pushed as a `v<version>` tag (see [CONTRIBUTING.md](CONTRIBUTING.md#-releases)).
 
+## [Unreleased]
+
+### Added
+
+- `Auth=custom` now issues and rotates refresh tokens: `POST /auth/login` returns a `refreshToken` alongside the access token, and `POST /auth/refresh` exchanges it for a new access/refresh pair. The server persists only a SHA-256 hash of the refresh token; presenting a token that was already rotated away (a stolen/replayed token) revokes the user's entire refresh-token chain as a compromise signal.
+
 ## [1.1.0]
 
 ### Fixed
