@@ -63,9 +63,13 @@ public sealed class LoginCommandHandlerTests : IDisposable
             .Returns(PasswordVerificationResult.Success);
         var tokenService = Substitute.For<ITokenService>();
         var expectedExpires = DateTime.UtcNow.AddMinutes(60);
+        var expectedRefreshExpires = DateTime.UtcNow.AddDays(7);
         tokenService
             .CreateTokenAsync(Arg.Any<AppUser>(), Arg.Any<CancellationToken>())
             .Returns(new TokenResult("token-jws-value", expectedExpires));
+        tokenService
+            .GenerateRefreshToken()
+            .Returns(new RefreshTokenResult("raw-refresh-token-value", expectedRefreshExpires));
 
         var handler = new LoginCommandHandler(_dbContext, passwordHasher, tokenService);
         var command = new LoginCommand(email, TestCredentials.DemoPassword);
@@ -76,9 +80,43 @@ public sealed class LoginCommandHandlerTests : IDisposable
         Assert.NotNull(result.Value);
         Assert.Equal("token-jws-value", result.Value.AccessToken);
         Assert.Equal(expectedExpires, result.Value.ExpiresAt);
+        Assert.Equal("raw-refresh-token-value", result.Value.RefreshToken);
+        Assert.Equal(expectedRefreshExpires, result.Value.RefreshTokenExpiresAt);
         await tokenService
             .Received(1)
             .CreateTokenAsync(Arg.Is<AppUser>(u => u.Email == email), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WithValidCredentials_PersistsOnlyTheHashedRefreshToken()
+    {
+        var email = TestCredentials.DemoEmail;
+        var seeded = await SeedUserAsync(email, "hashed:password");
+        var passwordHasher = Substitute.For<IPasswordHasher<AppUser>>();
+        passwordHasher
+            .VerifyHashedPassword(Arg.Any<AppUser>(), Arg.Any<string>(), Arg.Any<string>())
+            .Returns(PasswordVerificationResult.Success);
+        var tokenService = Substitute.For<ITokenService>();
+        tokenService
+            .CreateTokenAsync(Arg.Any<AppUser>(), Arg.Any<CancellationToken>())
+            .Returns(new TokenResult("token-jws-value", DateTime.UtcNow.AddMinutes(60)));
+        var refreshExpires = DateTime.UtcNow.AddDays(7);
+        tokenService
+            .GenerateRefreshToken()
+            .Returns(new RefreshTokenResult("raw-refresh-token-value", refreshExpires));
+
+        var handler = new LoginCommandHandler(_dbContext, passwordHasher, tokenService);
+        var command = new LoginCommand(email, TestCredentials.DemoPassword);
+
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        var stored = await _dbContext.RefreshTokens.SingleAsync(t => t.UserId == seeded.Id);
+        Assert.Equal(RefreshTokenHasher.Hash("raw-refresh-token-value"), stored.TokenHash);
+        Assert.NotEqual("raw-refresh-token-value", stored.TokenHash);
+        Assert.Equal(refreshExpires, stored.ExpiresAt);
+        Assert.Null(stored.RevokedAt);
+        Assert.Null(stored.ReplacedByTokenId);
     }
 
     [Fact]
@@ -149,6 +187,9 @@ public sealed class LoginCommandHandlerTests : IDisposable
             LastUserId = user.Id;
             return Task.FromResult(new TokenResult("token", DateTime.UtcNow.AddMinutes(60)));
         }
+
+        public RefreshTokenResult GenerateRefreshToken() =>
+            new("raw-refresh-token-value", DateTime.UtcNow.AddDays(7));
     }
 }
 #endif

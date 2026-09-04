@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `Auth=custom` now issues and rotates refresh tokens: `POST /auth/login` returns a `refreshToken` alongside the access token, and `POST /auth/refresh` exchanges it for a new access/refresh pair. The server persists only a SHA-256 hash of the refresh token; presenting a token that was already rotated away (a stolen/replayed token) revokes the user's entire refresh-token chain as a compromise signal.
 - Permission-based authorization on the Todo endpoints: `GET` requires `todos:read`, `POST`/`PUT`/`PATCH` require `todos:write`, and `DELETE` requires `todos:delete`. Policies are registered whenever `Auth` is enabled (`custom` or `azure-ad`), backed by a `PermissionAuthorizationHandler` that checks a `permission` claim. `Auth=custom` also gains an `AppUser.Permissions` column and `JwtTokenService` now emits one `permission` claim per granted permission; the seeded demo user is granted all three. `Auth=azure-ad` enforces the same policies but has no seeding story of its own -- Entra ID (via App Roles or a claims-mapping policy) must be configured to emit a matching `permission` claim.
 
 ## [1.1.0]

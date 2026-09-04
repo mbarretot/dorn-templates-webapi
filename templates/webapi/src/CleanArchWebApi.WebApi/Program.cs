@@ -34,12 +34,14 @@ builder.Services.AddHealthChecks();
 #endif
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddCaching();
 builder.Services.AddMediator(typeof(CreateTodoItemCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CreateTodoItemCommand).Assembly);
 builder.Services.AddOpenApi();
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddRateLimiting();
 
 #if (UseAuth)
 #if (UseCustomAuth)
@@ -102,6 +104,8 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
+
+app.UseRateLimiter();
 
 #if (UseAuth)
 app.UseAuthentication();

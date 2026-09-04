@@ -23,6 +23,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
 #if (UseCustomAuth)
     public DbSet<AppUser> Users => Set<AppUser>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 #endif
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -86,6 +88,19 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                         a => a.ToArray()
                     )
                 );
+        });
+
+        modelBuilder.Entity<RefreshToken>(builder =>
+        {
+            builder.HasKey(token => token.Id);
+            builder.Property(token => token.TokenHash).IsRequired();
+            builder.HasIndex(token => token.TokenHash).IsUnique();
+            builder.HasIndex(token => token.UserId);
+            builder
+                .HasOne<AppUser>()
+                .WithMany()
+                .HasForeignKey(token => token.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 #endif
 
