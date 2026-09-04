@@ -16,6 +16,7 @@
     <PackageReference Include="Dorn.Messaging" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <!-- Forces the transitive Microsoft.OpenApi resolution up to the patched version pinned in Directory.Packages.props -->
     <PackageReference Include="Microsoft.OpenApi" />

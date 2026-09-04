@@ -1,3 +1,4 @@
+global using CleanArchWebApi.Application.Common.Caching;
 global using CleanArchWebApi.Application.Common.Persistence;
 global using CleanArchWebApi.Domain.Common.Interfaces;
 global using CleanArchWebApi.Domain.Entities;
