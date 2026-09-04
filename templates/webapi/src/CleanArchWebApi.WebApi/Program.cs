@@ -34,6 +34,7 @@ builder.Services.AddHealthChecks();
 #endif
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddCaching();
 builder.Services.AddMediator(typeof(CreateTodoItemCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CreateTodoItemCommand).Assembly);
 builder.Services.AddOpenApi();
