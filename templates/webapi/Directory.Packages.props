@@ -75,7 +75,7 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
-    <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.3" />
+    <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.4" />
     <!-- Only CleanArchWebApi.Integration.Tests references this, and only when
          DatabaseProvider=sqlserver (see its conditional PackageReference) — it spins up a
          real SQL Server container via Docker, which the sqlite generation path (and this
