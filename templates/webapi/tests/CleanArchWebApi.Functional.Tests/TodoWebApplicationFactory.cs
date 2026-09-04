@@ -1,6 +1,14 @@
 #if (UseCustomAuth)
 using CleanArchWebApi.Functional.Tests.Auth;
 #endif
+#if (UseAuth)
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using CleanArchWebApi.Application.Common.Security;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+#endif
 
 namespace CleanArchWebApi.Functional.Tests;
 
@@ -22,6 +30,26 @@ public sealed partial class TodoWebApplicationFactory
             .UseSetting("Jwt:Issuer", AuthWebApplicationFactory.Issuer)
             .UseSetting("Jwt:Audience", AuthWebApplicationFactory.Audience)
             .UseSetting("Jwt:LifetimeMinutes", "60");
+#endif
+#if (UseAuth)
+        // This fixture exercises Todo CRUD behavior, not authorization (see Auth/TodoAuthorizationTests.cs for
+        // that), so it replaces the real auth scheme with one that always succeeds and grants every permission
+        // instead of round-tripping a real login/token per request.
+        builder.ConfigureServices(services =>
+        {
+            services
+                .AddAuthentication(AlwaysAuthenticatedHandler.SchemeName)
+                .AddScheme<AuthenticationSchemeOptions, AlwaysAuthenticatedHandler>(
+                    AlwaysAuthenticatedHandler.SchemeName,
+                    _ => { }
+                );
+            services.PostConfigure<AuthenticationOptions>(options =>
+            {
+                options.DefaultScheme = AlwaysAuthenticatedHandler.SchemeName;
+                options.DefaultAuthenticateScheme = AlwaysAuthenticatedHandler.SchemeName;
+                options.DefaultChallengeScheme = AlwaysAuthenticatedHandler.SchemeName;
+            });
+        });
 #endif
         ConfigurePersistence(builder);
     }
@@ -49,3 +77,28 @@ public sealed partial class TodoWebApplicationFactory
         }
     }
 }
+
+#if (UseAuth)
+internal sealed class AlwaysAuthenticatedHandler
+    : AuthenticationHandler<AuthenticationSchemeOptions>
+{
+    public const string SchemeName = "AlwaysAuthenticated";
+
+    public AlwaysAuthenticatedHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder
+    )
+        : base(options, logger, encoder) { }
+
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        var identity = new ClaimsIdentity(
+            Permissions.All.Select(permission => new Claim(Permissions.ClaimType, permission)),
+            Scheme.Name
+        );
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name);
+        return Task.FromResult(AuthenticateResult.Success(ticket));
+    }
+}
+#endif
