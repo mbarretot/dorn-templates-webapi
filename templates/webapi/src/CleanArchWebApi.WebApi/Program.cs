@@ -47,7 +47,7 @@ builder.Services.AddCustomJwtAuth(builder.Configuration, builder.Environment);
 #elif (UseAzureAdAuth)
 builder.Services.AddAzureAdAuth(builder.Configuration);
 #endif
-builder.Services.AddAuthorization();
+builder.Services.AddPermissionAuthorization();
 #endif
 
 var app = builder.Build();

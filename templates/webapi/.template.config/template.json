@@ -236,7 +236,12 @@
           "condition": "(!UseAuth)",
           "exclude": [
             "src/CleanArchWebApi.WebApi/Extensions/AuthenticationExtensions.cs",
-            "src/CleanArchWebApi.WebApi/Endpoints/MeEndpoints.cs"
+            "src/CleanArchWebApi.WebApi/Extensions/AuthorizationExtensions.cs",
+            "src/CleanArchWebApi.WebApi/Authorization/PermissionRequirement.cs",
+            "src/CleanArchWebApi.WebApi/Authorization/PermissionAuthorizationHandler.cs",
+            "src/CleanArchWebApi.WebApi/Endpoints/MeEndpoints.cs",
+            "src/CleanArchWebApi.Application/Common/Security/Permissions.cs",
+            "tests/CleanArchWebApi.Functional.Tests/Authorization/PermissionAuthorizationHandlerTests.cs"
           ]
         },
         {
@@ -255,17 +260,24 @@
             "src/CleanArchWebApi.Infrastructure/Persistence/Seed/AuthSeeder.cs",
             "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/20260807050632_AddAuthUser.cs",
             "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/20260807050632_AddAuthUser.Designer.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/20260904155640_AddUserPermissions.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Sqlite/20260904155640_AddUserPermissions.Designer.cs",
             "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/20260807050702_AddAuthUser.cs",
             "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/20260807050702_AddAuthUser.Designer.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/20260904161420_AddUserPermissions.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/SqlServer/20260904161420_AddUserPermissions.Designer.cs",
             "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/20260807050712_AddAuthUser.cs",
             "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/20260807050712_AddAuthUser.Designer.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/20260904161428_AddUserPermissions.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/Postgres/20260904161428_AddUserPermissions.Designer.cs",
             "tests/CleanArchWebApi.Application.Tests/Auth/JwtTokenServiceTests.cs",
             "tests/CleanArchWebApi.Application.Tests/Auth/LoginCommandHandlerTests.cs",
             "tests/CleanArchWebApi.Application.Tests/Auth/LoginCommandValidatorTests.cs",
             "tests/CleanArchWebApi.Application.Tests/Auth/TestCredentials.cs",
             "tests/CleanArchWebApi.Functional.Tests/Auth/AuthWebApplicationFactory.cs",
             "tests/CleanArchWebApi.Functional.Tests/Auth/LoginEndpointTests.cs",
-            "tests/CleanArchWebApi.Functional.Tests/Auth/MeEndpointsTests.cs"
+            "tests/CleanArchWebApi.Functional.Tests/Auth/MeEndpointsTests.cs",
+            "tests/CleanArchWebApi.Functional.Tests/Auth/TodoAuthorizationTests.cs"
           ]
         },
         {

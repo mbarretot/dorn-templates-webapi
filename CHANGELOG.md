@@ -4,6 +4,12 @@ All notable changes to the `Dorn.Templates.WebApi` package are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses the version pushed as a `v<version>` tag (see [CONTRIBUTING.md](CONTRIBUTING.md#-releases)).
 
+## [Unreleased]
+
+### Added
+
+- Permission-based authorization on the Todo endpoints: `GET` requires `todos:read`, `POST`/`PUT`/`PATCH` require `todos:write`, and `DELETE` requires `todos:delete`. Policies are registered whenever `Auth` is enabled (`custom` or `azure-ad`), backed by a `PermissionAuthorizationHandler` that checks a `permission` claim. `Auth=custom` also gains an `AppUser.Permissions` column and `JwtTokenService` now emits one `permission` claim per granted permission; the seeded demo user is granted all three. `Auth=azure-ad` enforces the same policies but has no seeding story of its own -- Entra ID (via App Roles or a claims-mapping policy) must be configured to emit a matching `permission` claim.
+
 ## [1.1.0]
 
 ### Fixed

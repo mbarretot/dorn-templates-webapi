@@ -1,6 +1,7 @@
 #if (UseCustomAuth)
 using CleanArchWebApi.Domain.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 #endif
 
 namespace CleanArchWebApi.Infrastructure.Persistence;
@@ -61,6 +62,30 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         {
             builder.HasIndex(u => u.Email).IsUnique();
             builder.HasIndex(u => u.NormalizedEmail).IsUnique();
+
+            // Stored as a single delimited column instead of a join table -- permissions are a small, closed set
+            // owned entirely by this entity, so a normalized table would add a join for no real benefit here.
+            builder
+                .Property(u => u.Permissions)
+                .HasConversion(
+                    permissions => string.Join(',', permissions),
+                    value =>
+                        value.Length == 0
+                            ? Array.Empty<string>()
+                            : value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                )
+                .Metadata.SetValueComparer(
+                    new ValueComparer<string[]>(
+                        (a, b) =>
+                            (a ?? Array.Empty<string>()).SequenceEqual(b ?? Array.Empty<string>()),
+                        a =>
+                            a.Aggregate(
+                                0,
+                                (hash, permission) => HashCode.Combine(hash, permission)
+                            ),
+                        a => a.ToArray()
+                    )
+                );
         });
 #endif
 
