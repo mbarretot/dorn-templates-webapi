@@ -1,5 +1,6 @@
 #if (UseCustomAuth)
 using System.Security.Cryptography;
+using CleanArchWebApi.Application.Common.Security;
 using CleanArchWebApi.Domain.Users;
 using CleanArchWebApi.Infrastructure.Auth;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +38,9 @@ public static class AuthSeeder
                 NormalizedEmail = email.ToUpperInvariant(),
                 NormalizedUserName = email.ToUpperInvariant(),
                 PasswordHash = hasher.HashPassword(null!, password),
+                // Grants every permission so the seeded demo account can exercise the endpoints it exists to
+                // demonstrate; assign a narrower set for real users.
+                Permissions = [.. Permissions.All],
             }
         );
         await db.SaveChangesAsync(ct);
