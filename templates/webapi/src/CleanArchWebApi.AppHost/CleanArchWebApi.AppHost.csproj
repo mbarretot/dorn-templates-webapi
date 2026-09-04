@@ -12,7 +12,10 @@
     <PackageReference Include="Aspire.Hosting.SqlServer" Condition="'$(UseSqlServer)' == 'True'" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Condition="'$(UsePostgres)' == 'True'" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="10.0.11" />
+    <PackageReference
+      Include="Microsoft.Extensions.DependencyInjection"
+      VersionOverride="10.0.11"
+    />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
