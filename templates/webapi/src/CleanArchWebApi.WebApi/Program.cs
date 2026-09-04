@@ -40,6 +40,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddRateLimiting();
 
 #if (UseAuth)
 #if (UseCustomAuth)
@@ -102,6 +103,8 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
+
+app.UseRateLimiter();
 
 #if (UseAuth)
 app.UseAuthentication();
