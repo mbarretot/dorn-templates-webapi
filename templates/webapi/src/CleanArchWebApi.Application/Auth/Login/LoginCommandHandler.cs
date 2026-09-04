@@ -50,7 +50,28 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<L
         }
 
         var token = await _tokenService.CreateTokenAsync(user, ct);
-        return Result.Success(new LoginResponse(token.AccessToken, token.ExpiresAt));
+        var refreshToken = _tokenService.GenerateRefreshToken();
+
+        _dbContext.RefreshTokens.Add(
+            new RefreshToken
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                TokenHash = RefreshTokenHasher.Hash(refreshToken.Token),
+                ExpiresAt = refreshToken.ExpiresAt,
+                CreatedAt = DateTime.UtcNow,
+            }
+        );
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success(
+            new LoginResponse(
+                token.AccessToken,
+                token.ExpiresAt,
+                refreshToken.Token,
+                refreshToken.ExpiresAt
+            )
+        );
     }
 }
 #endif
