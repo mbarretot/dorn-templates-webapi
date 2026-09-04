@@ -1,7 +1,7 @@
 #if (UseCustomAuth)
-namespace CleanArchWebApi.Application.Auth.Login;
+namespace CleanArchWebApi.Application.Auth.Refresh;
 
-public sealed record LoginResponse(
+public sealed record RefreshTokenResponse(
     string AccessToken,
     DateTime ExpiresAt,
     string RefreshToken,
