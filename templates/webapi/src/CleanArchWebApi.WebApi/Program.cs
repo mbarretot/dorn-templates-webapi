@@ -34,12 +34,14 @@ builder.Services.AddHealthChecks();
 #endif
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddCaching();
 builder.Services.AddMediator(typeof(CreateTodoItemCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CreateTodoItemCommand).Assembly);
 builder.Services.AddOpenApi();
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddRateLimiting();
 
 #if (UseAuth)
 #if (UseCustomAuth)
@@ -47,7 +49,7 @@ builder.Services.AddCustomJwtAuth(builder.Configuration, builder.Environment);
 #elif (UseAzureAdAuth)
 builder.Services.AddAzureAdAuth(builder.Configuration);
 #endif
-builder.Services.AddAuthorization();
+builder.Services.AddPermissionAuthorization();
 #endif
 
 var app = builder.Build();
@@ -102,6 +104,8 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
+
+app.UseRateLimiter();
 
 #if (UseAuth)
 app.UseAuthentication();

@@ -1,5 +1,6 @@
 #if (UseCustomAuth)
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using CleanArchWebApi.Application.Common.Security;
 using CleanArchWebApi.Domain.Users;
@@ -31,6 +32,9 @@ public sealed class JwtTokenService : ITokenService
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.UserName ?? user.Email ?? string.Empty),
         };
+        claims.AddRange(
+            user.Permissions.Select(permission => new Claim(Permissions.ClaimType, permission))
+        );
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.SigningKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -49,6 +53,19 @@ public sealed class JwtTokenService : ITokenService
         var token = handler.CreateToken(tokenDescriptor);
 
         return Task.FromResult(new TokenResult(token, expiresAt));
+    }
+
+    public RefreshTokenResult GenerateRefreshToken()
+    {
+        var tokenBytes = RandomNumberGenerator.GetBytes(32);
+        var token = Convert
+            .ToBase64String(tokenBytes)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+        var expiresAt = DateTime.UtcNow.AddDays(_jwt.RefreshTokenLifetimeDays);
+
+        return new RefreshTokenResult(token, expiresAt);
     }
 }
 #endif
