@@ -82,4 +82,16 @@ public class TemplateParameterMetadataTests
         Assert.Contains("secret", description, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("user-secrets", description, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public void IncludeAgentRules_IsAnOptInBool_ThatNamesTheGeneratedFiles()
+    {
+        var parameter = Parameter("IncludeAgentRules");
+
+        Assert.Equal("bool", parameter.GetProperty("datatype").GetString());
+        Assert.Equal("false", parameter.GetProperty("defaultValue").GetString());
+        var description = parameter.GetProperty("description").GetString()!;
+        Assert.Contains("AGENTS.md", description, StringComparison.Ordinal);
+        Assert.Contains("CLAUDE.md", description, StringComparison.Ordinal);
+    }
 }

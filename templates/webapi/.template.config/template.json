@@ -49,6 +49,22 @@
           }
         }
       ]
+    },
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": ["<!--#if"],
+            "else": ["<!--#else"],
+            "elseif": ["<!--#elseif"],
+            "endif": ["<!--#endif"],
+            "trim": "true",
+            "wholeLine": "true",
+            "evaluator": "C++"
+          }
+        }
+      ]
     }
   },
   "symbols": {
@@ -74,6 +90,12 @@
       "datatype": "bool",
       "defaultValue": "true",
       "description": "Include the xUnit test projects: Unit (Application), Integration (real DatabaseProvider), Architecture (layering rules), and Functional (HTTP endpoints)."
+    },
+    "IncludeAgentRules": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Generate AGENTS.md (and a CLAUDE.md that points to it) at the solution root, describing this solution's layers, conventions, commands, and test tiers for AI coding agents. The content is adapted to the chosen ORM, database, orchestrator, authentication, and test options."
     },
     "Orm": {
       "type": "parameter",
@@ -189,6 +211,10 @@
         {
           "condition": "(!IncludeTests)",
           "exclude": ["tests/**"]
+        },
+        {
+          "condition": "(!IncludeAgentRules)",
+          "exclude": ["AGENTS.md", "CLAUDE.md"]
         },
         {
           "condition": "(UseDapper)",

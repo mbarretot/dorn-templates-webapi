@@ -32,6 +32,7 @@ dotnet dorn run
 | `--Orchestrator <aspire\|docker-compose\|none>` | `aspire` | Local runtime |
 | `--IncludeTests <bool>` | `true` | Generated test projects |
 | `--ConnectionString <text>` | empty | Database connection used instead of the provider's default |
+| `--IncludeAgentRules <bool>` | `false` | `AGENTS.md` and a `CLAUDE.md` that points to it |
 
 > [!WARNING]
 > `--ConnectionString` is written to `appsettings.json` in clear text. Keep secrets out of it and use `dotnet user-secrets` or environment variables for credentials.

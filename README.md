@@ -46,6 +46,7 @@ dotnet dorn run
 | `--Orchestrator` | `aspire` | `aspire`, `docker-compose`, `none` | Local runtime |
 | `--IncludeTests` | `true` | `bool` | Generated test projects |
 | `--ConnectionString` | empty | free text | Database connection used instead of the provider's default |
+| `--IncludeAgentRules` | `false` | `bool` | `AGENTS.md` and a `CLAUDE.md` that points to it |
 
 > [!IMPORTANT]
 > `--Auth custom` requires `--Orm efcore`. The template stops an unsupported combination at build time with an actionable `#error`.
@@ -69,6 +70,10 @@ The generated test tiers keep their own SQLite file or Testcontainers database, 
 
 > [!WARNING]
 > The value lands in `appsettings.json` in clear text. Do not put secrets in it: generate with a passwordless or placeholder string and set the credentials with `dotnet user-secrets` or an environment variable such as `ConnectionStrings__<name>`.
+
+### 🤖 `IncludeAgentRules`
+
+With `--IncludeAgentRules true` the solution root gets an `AGENTS.md` and a `CLAUDE.md` (a one-line import of `AGENTS.md`). The rules cover the layers, conventions, commands, and test tiers of that solution only: they name the selected ORM, database, orchestrator, and authentication, and leave out everything that was not generated.
 
 ### 💾 `Orm=dapper` support level
 
