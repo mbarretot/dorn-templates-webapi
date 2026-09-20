@@ -32,9 +32,9 @@ public sealed partial class ApiWebApplicationFactory
             .UseSetting("Jwt:LifetimeMinutes", "60");
 #endif
 #if (UseAuth)
-        // This fixture exercises Todo CRUD behavior, not authorization (see Auth/TodoAuthorizationTests.cs for
-        // that), so it replaces the real auth scheme with one that always succeeds and grants every permission
-        // instead of round-tripping a real login/token per request.
+        // This fixture exercises endpoint behavior, not authorization (the Auth tests cover that), so it replaces
+        // the real auth scheme with one that always succeeds and grants every permission instead of
+        // round-tripping a real login/token per request.
         builder.ConfigureServices(services =>
         {
             services

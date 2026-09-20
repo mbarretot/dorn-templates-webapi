@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CleanArchWebApi.WebApi.Extensions;
 
-/// <summary>Registers one named policy per <see cref="Permissions"/> constant (e.g. "todos:read"), all backed by
+/// <summary>Registers one named policy per <see cref="Permissions"/> constant, all backed by
 /// the same <see cref="PermissionAuthorizationHandler"/>. A named-policy loop is simpler to read here than a
 /// dynamic IAuthorizationPolicyProvider, and the permission set is small and closed (defined once, in one
 /// place) so there is no need to synthesize policies on demand.</summary>

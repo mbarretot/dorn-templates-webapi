@@ -1,10 +1,10 @@
 using CleanArchWebApi.Application.Common.Behaviors;
-#if (IncludeSample)
-using CleanArchWebApi.Application.Todos.CreateTodoItem;
-#endif
 using Dorn.Messaging;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
+#if (IncludeSample)
+using CleanArchWebApi.Application.Todos.CreateTodoItem;
+#endif
 
 namespace CleanArchWebApi.Application.Tests.Messaging;
 
@@ -12,7 +12,6 @@ public sealed class AddMediatorTests
 {
 #if (!IncludeSample)
     private sealed record PingQuery : IRequest<string>;
-
 #endif
     [Fact]
     public void AddMediator_RegistersOpenGenericPipelineBehaviors_WithoutThrowingOnBuild()

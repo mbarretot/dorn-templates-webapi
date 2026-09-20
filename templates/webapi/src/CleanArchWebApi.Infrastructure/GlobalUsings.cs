@@ -1,9 +1,9 @@
 global using CleanArchWebApi.Application.Common.Persistence;
+global using Dorn.Messaging.Contracts;
+global using Dorn.SharedKernel;
 #if (IncludeSample)
 global using CleanArchWebApi.Domain.Entities;
 #endif
-global using Dorn.Messaging.Contracts;
-global using Dorn.SharedKernel;
 #if (UseEfCore)
 global using CleanArchWebApi.Infrastructure.Persistence;
 #if (IncludeSample)

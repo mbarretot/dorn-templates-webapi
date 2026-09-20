@@ -117,7 +117,7 @@ Dependencies point inward. Never add a reference that points outward.
 - Tokens are self-issued: `Jwt:Issuer`, `Jwt:Audience`, and `Jwt:SigningKey` live in the `Jwt` section. Set the signing key with `dotnet user-secrets` or `Jwt__SigningKey`; outside Development, startup throws while it is a placeholder.
 - `POST /auth/login` returns an access token and a refresh token; `POST /auth/refresh` rotates the pair. Only a SHA-256 hash of the refresh token is stored, and replaying a rotated token revokes the user's whole chain.
 - `Program.cs` seeds a demo user from `AuthSeed:DemoEmail` and logs its generated password in Development. Replace this seeding before deploying.
-- Custom authentication needs EF Core: `AppUser` and its migrations do not exist under Dapper.
+- `AppUser`, refresh tokens, and their migrations are part of the EF Core persistence; keep the user store there.
 <!--#endif -->
 <!--#if (UseAzureAdAuth) -->
 - Tokens are validated only, with `Microsoft.Identity.Web` and the `AzureAd` section. Replace the `REPLACE_ME_*` tenant and client ids. There is no login endpoint and no user store.
