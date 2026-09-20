@@ -65,6 +65,9 @@ Dependencies point inward. Never add a reference that points outward.
 - **Caching**: a query implementing `ICacheableQuery<T>` is cached in HybridCache; a command implementing `ICacheInvalidatingCommand` lists the keys it invalidates.
 - **Endpoints**: a static class per feature in `WebApi/Endpoints` with a `Map<Feature>Endpoints` extension, called from `Program.cs`.
 - **Cross-cutting**: a global rate limiter (`RateLimitingExtensions`), OpenTelemetry (`ObservabilityExtensions`), and `GET /health` are already wired.
+<!--#if (IncludeLocalization) -->
+- **Localization**: the culture comes from the `Accept-Language` header (`LocalizationExtensions`); default and supported cultures are the `Localization` section of `appsettings.json`. User-facing strings go through `IStringLocalizer<SharedResource>`: add the key to `WebApi/Localization/SharedResource.resx` (English) and translate it in each `SharedResource.<culture>.resx`. To add a language, add its `.resx` and its code to `Localization:SupportedCultures`.
+<!--#endif -->
 <!--#if (IncludeSample) -->
 - **Sample feature**: `Todos` is the reference implementation across every layer. Copy its shape for a new feature.
 <!--#else -->

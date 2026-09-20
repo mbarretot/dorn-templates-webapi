@@ -103,6 +103,24 @@
       "defaultValue": "false",
       "description": "Generate AGENTS.md (and a CLAUDE.md that points to it) at the solution root, describing this solution's layers, conventions, commands, and test tiers for AI coding agents. The content is adapted to the chosen ORM, database, orchestrator, authentication, and test options."
     },
+    "IncludeLocalization": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Add IStringLocalizer-based localization: request localization middleware that resolves the culture from the Accept-Language header, a SharedResource.resx with the localizable API messages (validation problem and error titles) plus one .resx per language chosen with Languages, and FluentValidation messages that follow the request culture. See DefaultLanguage and Languages."
+    },
+    "DefaultLanguage": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "en",
+      "description": "Culture code (for example en or pt-BR) used when the request carries no supported Accept-Language. Only used with IncludeLocalization=true. SharedResource.resx holds the English source text; a default language other than en gets its own .resx once it is listed in Languages."
+    },
+    "Languages": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "",
+      "description": "Comma-separated culture codes the API supports, for example es,pt-BR,zh-Hans; custom codes such as gl are accepted, and the default language should be listed too. Each code except en gets a SharedResource.<code>.resx starter copy to translate. Empty supports the default language only. Only used with IncludeLocalization=true; at most 24 unique codes, otherwise the build of the Domain project fails with an actionable error."
+    },
     "Orm": {
       "type": "parameter",
       "datatype": "choice",
@@ -209,7 +227,390 @@
     "UseCustomAuth": { "type": "computed", "value": "(Auth == \"custom\")" },
     "UseAzureAdAuth": { "type": "computed", "value": "(Auth == \"azure-ad\")" },
     "UseAuth": { "type": "computed", "value": "(UseCustomAuth || UseAzureAdAuth)" },
-    "UseCustomAuthWithDapper": { "type": "computed", "value": "(UseCustomAuth && UseDapper)" }
+    "UseCustomAuthWithDapper": { "type": "computed", "value": "(UseCustomAuth && UseDapper)" },
+    "LanguagesAreValid": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {"source": "Languages", "pattern": "^\\s*(?:[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*(?:\\s*,\\s*[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*){0,23})?\\s*$" }
+    },
+    "LanguagesAreUnique": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {"source": "Languages", "pattern": "(?i)^(?!(?:.*,)?\\s*([^,\\s]+)\\s*(?:,[^,]*)*?,\\s*\\1\\s*(?:,|$)).*$" }
+    },
+    "DefaultLanguageIsValid": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {"source": "DefaultLanguage", "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$" }
+    },
+    "LocalizationIsInvalid": {
+      "type": "computed",
+      "value": "(IncludeLocalization && !(DefaultLanguageIsValid && LanguagesAreValid && LanguagesAreUnique))"
+    },
+    "DefaultLanguageJson": {
+      "type": "derived",
+      "datatype": "string",
+      "valueSource": "DefaultLanguage",
+      "valueTransform": "jsonString",
+      "replaces": "__DORN_DEFAULT_CULTURE_JSON__"
+    },
+    "NormalizedLanguages": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "^(?!\\s*[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*(?:\\s*,\\s*[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*){0,23}\\s*$).*$", "replacement": ""},
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": ",", "replacement": "\",\""}
+        ]
+      }
+    },
+    "SupportedCulturesJson": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {"sourceVariableName": "NormalizedLanguages", "fallbackVariableName": "DefaultLanguageJson" },
+      "replaces": "__DORN_SUPPORTED_CULTURES_JSON__"
+    },
+    "LanguageFile01": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){0}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_01__"
+    },
+    "LanguageFile02": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){1}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_02__"
+    },
+    "LanguageFile03": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){2}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_03__"
+    },
+    "LanguageFile04": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){3}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_04__"
+    },
+    "LanguageFile05": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){4}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_05__"
+    },
+    "LanguageFile06": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){5}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_06__"
+    },
+    "LanguageFile07": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){6}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_07__"
+    },
+    "LanguageFile08": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){7}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_08__"
+    },
+    "LanguageFile09": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){8}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_09__"
+    },
+    "LanguageFile10": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){9}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_10__"
+    },
+    "LanguageFile11": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){10}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_11__"
+    },
+    "LanguageFile12": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){11}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_12__"
+    },
+    "LanguageFile13": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){12}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_13__"
+    },
+    "LanguageFile14": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){13}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_14__"
+    },
+    "LanguageFile15": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){14}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_15__"
+    },
+    "LanguageFile16": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){15}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_16__"
+    },
+    "LanguageFile17": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){16}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_17__"
+    },
+    "LanguageFile18": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){17}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_18__"
+    },
+    "LanguageFile19": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){18}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_19__"
+    },
+    "LanguageFile20": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){19}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_20__"
+    },
+    "LanguageFile21": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){20}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_21__"
+    },
+    "LanguageFile22": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){21}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_22__"
+    },
+    "LanguageFile23": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){22}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_23__"
+    },
+    "LanguageFile24": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "Languages",
+        "steps": [
+          {"regex": "\\s+", "replacement": ""},
+          {"regex": "^(?:[^,]*,){23}([^,]*).*$|^.*$", "replacement": "$1"},
+          {"regex": "^(?![A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$).*$", "replacement": ""},
+          {"regex": "^[Ee][Nn]$", "replacement": ""}
+        ]
+      },
+      "fileRename": "__DORN_LANGUAGE_24__"
+    }
   },
   "sources": [
     {
@@ -217,6 +618,110 @@
         {
           "condition": "(!IncludeTests)",
           "exclude": ["tests/**"]
+        },
+        {
+          "condition": "(!IncludeLocalization)",
+          "exclude": [
+            "src/CleanArchWebApi.WebApi/Localization/**",
+            "src/CleanArchWebApi.WebApi/Extensions/LocalizationExtensions.cs",
+            "tests/CleanArchWebApi.Functional.Tests/LocalizationTests.cs"
+          ]
+        },
+        {
+          "condition": "(LanguageFile01 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_01__.resx"]
+        },
+        {
+          "condition": "(LanguageFile02 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_02__.resx"]
+        },
+        {
+          "condition": "(LanguageFile03 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_03__.resx"]
+        },
+        {
+          "condition": "(LanguageFile04 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_04__.resx"]
+        },
+        {
+          "condition": "(LanguageFile05 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_05__.resx"]
+        },
+        {
+          "condition": "(LanguageFile06 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_06__.resx"]
+        },
+        {
+          "condition": "(LanguageFile07 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_07__.resx"]
+        },
+        {
+          "condition": "(LanguageFile08 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_08__.resx"]
+        },
+        {
+          "condition": "(LanguageFile09 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_09__.resx"]
+        },
+        {
+          "condition": "(LanguageFile10 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_10__.resx"]
+        },
+        {
+          "condition": "(LanguageFile11 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_11__.resx"]
+        },
+        {
+          "condition": "(LanguageFile12 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_12__.resx"]
+        },
+        {
+          "condition": "(LanguageFile13 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_13__.resx"]
+        },
+        {
+          "condition": "(LanguageFile14 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_14__.resx"]
+        },
+        {
+          "condition": "(LanguageFile15 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_15__.resx"]
+        },
+        {
+          "condition": "(LanguageFile16 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_16__.resx"]
+        },
+        {
+          "condition": "(LanguageFile17 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_17__.resx"]
+        },
+        {
+          "condition": "(LanguageFile18 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_18__.resx"]
+        },
+        {
+          "condition": "(LanguageFile19 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_19__.resx"]
+        },
+        {
+          "condition": "(LanguageFile20 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_20__.resx"]
+        },
+        {
+          "condition": "(LanguageFile21 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_21__.resx"]
+        },
+        {
+          "condition": "(LanguageFile22 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_22__.resx"]
+        },
+        {
+          "condition": "(LanguageFile23 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_23__.resx"]
+        },
+        {
+          "condition": "(LanguageFile24 == \"\")",
+          "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_24__.resx"]
         },
         {
           "condition": "(!IncludeSample)",

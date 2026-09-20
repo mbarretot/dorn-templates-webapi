@@ -48,6 +48,9 @@ dotnet dorn run
 | `--ConnectionString` | empty | free text | Database connection used instead of the provider's default |
 | `--IncludeSample` | `true` | `bool` | The Todo sample feature and the tests that use it |
 | `--IncludeAgentRules` | `false` | `bool` | `AGENTS.md` and a `CLAUDE.md` that points to it |
+| `--IncludeLocalization` | `false` | `bool` | Localized API: `IStringLocalizer`, request localization from `Accept-Language`, `.resx` resources |
+| `--DefaultLanguage` | `en` | culture code | Default culture of the localized API |
+| `--Languages` | empty | comma-separated culture codes | Cultures the localized API supports, one `.resx` each |
 
 > [!IMPORTANT]
 > `--Auth custom` requires `--Orm efcore` and `--IncludeSample true`. The template stops an unsupported combination at build time with an actionable `#error`.
@@ -91,6 +94,20 @@ Without the sample, `Permissions.All` is empty and the EF Core `DbContext` has n
 ### 🤖 `IncludeAgentRules`
 
 With `--IncludeAgentRules true` the solution root gets an `AGENTS.md` and a `CLAUDE.md` (a one-line import of `AGENTS.md`). The rules cover the layers, conventions, commands, and test tiers of that solution only: they name the selected ORM, database, orchestrator, and authentication, and leave out everything that was not generated.
+
+### 🌍 `IncludeLocalization`
+
+With `--IncludeLocalization true` the API negotiates a culture per request and localizes its own messages, for every ORM, database, orchestrator, and `Auth` choice:
+
+- **Culture**: ASP.NET Core request localization reads the `Accept-Language` header only (query string and cookie providers are removed). The default and supported cultures come from the `Localization` section of `appsettings.json` (`DefaultCulture`, `SupportedCultures`), so adding a language later is a resource file plus one settings entry. The chosen culture is echoed in `Content-Language`, and an unsupported culture falls back to the default.
+- **Resources**: `src/<Name>.WebApi/Localization/SharedResource.resx` holds the English source text (the validation problem title and the titles of common error statuses), read through `IStringLocalizer<SharedResource>`. Each culture in `--Languages` except `en` gets a `SharedResource.<code>.resx` starter copy to translate; a key removed from a language file falls back to the neutral text.
+- **Validation messages**: FluentValidation's own messages follow the request culture through its built-in translations, and the validation problem's title comes from the resource file.
+- **Custom cultures**: any code shaped like `en`, `pt-BR` or `zh-Hans` is accepted. The runtime must know the culture: the API stops at startup with a clear message otherwise.
+
+`--Languages` is a comma-separated list of at most 24 unique codes and should include `--DefaultLanguage` (which is added at runtime when it is missing). Invalid or duplicated codes, or more than 24, stop the build of the `Domain` project with an actionable `#error`, and nothing is written outside the solution. Without `--IncludeLocalization` the two language options are ignored and the generated solution is unchanged.
+
+> [!NOTE]
+> The template ships English text only. The per-language files are starting points, not translations: the strings you add there are yours to translate.
 
 ### 💾 `Orm=dapper` support level
 

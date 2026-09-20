@@ -44,6 +44,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddRateLimiting();
+#if (IncludeLocalization)
+builder.Services.AddApiLocalization(builder.Configuration);
+#endif
 
 #if (UseAuth)
 #if (UseCustomAuth)
@@ -103,6 +106,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+#if (IncludeLocalization)
+app.UseApiLocalization();
+#endif
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();

@@ -96,6 +96,46 @@ public class TemplateParameterMetadataTests
     }
 
     [Fact]
+    public void IncludeLocalization_IsAnOptInBool_ThatNamesTheMechanism()
+    {
+        var parameter = Parameter("IncludeLocalization");
+
+        Assert.Equal("bool", parameter.GetProperty("datatype").GetString());
+        Assert.Equal("false", parameter.GetProperty("defaultValue").GetString());
+        var description = parameter.GetProperty("description").GetString()!;
+        Assert.Contains("IStringLocalizer", description, StringComparison.Ordinal);
+        Assert.Contains("Accept-Language", description, StringComparison.Ordinal);
+        Assert.Contains(".resx", description, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DefaultLanguage_IsAStringThatDefaultsToEnglish()
+    {
+        var parameter = Parameter("DefaultLanguage");
+
+        Assert.Equal("string", parameter.GetProperty("datatype").GetString());
+        Assert.Equal("en", parameter.GetProperty("defaultValue").GetString());
+        Assert.Contains(
+            "IncludeLocalization",
+            parameter.GetProperty("description").GetString()!,
+            StringComparison.Ordinal
+        );
+    }
+
+    [Fact]
+    public void Languages_IsACommaSeparatedStringOfCultureCodes_ThatDefaultsToEmpty()
+    {
+        var parameter = Parameter("Languages");
+
+        Assert.Equal("string", parameter.GetProperty("datatype").GetString());
+        Assert.Equal("", parameter.GetProperty("defaultValue").GetString());
+        var description = parameter.GetProperty("description").GetString()!;
+        Assert.Contains("culture", description, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("comma", description, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("24", description, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void IncludeSample_IsAnOptOutBool_ThatDocumentsTheCustomAuthLimit()
     {
         var parameter = Parameter("IncludeSample");

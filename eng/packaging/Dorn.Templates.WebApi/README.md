@@ -34,6 +34,9 @@ dotnet dorn run
 | `--ConnectionString <text>` | empty | Database connection used instead of the provider's default |
 | `--IncludeSample <bool>` | `true` | The Todo sample feature and the tests that use it |
 | `--IncludeAgentRules <bool>` | `false` | `AGENTS.md` and a `CLAUDE.md` that points to it |
+| `--IncludeLocalization <bool>` | `false` | `IStringLocalizer`, request localization from `Accept-Language`, `.resx` resources |
+| `--DefaultLanguage <culture>` | `en` | Default culture of the localized API |
+| `--Languages <codes>` | empty | Comma-separated culture codes, one `.resx` each (at most 24) |
 
 > [!WARNING]
 > `--ConnectionString` is written to `appsettings.json` in clear text. Keep secrets out of it and use `dotnet user-secrets` or environment variables for credentials.
