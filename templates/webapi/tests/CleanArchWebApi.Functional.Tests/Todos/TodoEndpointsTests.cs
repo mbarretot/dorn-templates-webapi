@@ -1,11 +1,11 @@
 namespace CleanArchWebApi.Functional.Tests.Todos;
 
 /// <summary>Round-trips the real Minimal API endpoints over an in-memory TestServer.</summary>
-public sealed class TodoEndpointsTests : IClassFixture<TodoWebApplicationFactory>
+public sealed class TodoEndpointsTests : IClassFixture<ApiWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public TodoEndpointsTests(TodoWebApplicationFactory factory)
+    public TodoEndpointsTests(ApiWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }

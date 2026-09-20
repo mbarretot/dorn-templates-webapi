@@ -94,4 +94,16 @@ public class TemplateParameterMetadataTests
         Assert.Contains("AGENTS.md", description, StringComparison.Ordinal);
         Assert.Contains("CLAUDE.md", description, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void IncludeSample_IsAnOptOutBool_ThatDocumentsTheCustomAuthLimit()
+    {
+        var parameter = Parameter("IncludeSample");
+
+        Assert.Equal("bool", parameter.GetProperty("datatype").GetString());
+        Assert.Equal("true", parameter.GetProperty("defaultValue").GetString());
+        var description = parameter.GetProperty("description").GetString()!;
+        Assert.Contains("Todo", description, StringComparison.Ordinal);
+        Assert.Contains("Auth=custom", description, StringComparison.Ordinal);
+    }
 }

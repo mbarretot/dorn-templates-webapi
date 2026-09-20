@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 namespace CleanArchWebApi.Functional.Tests;
 
 /// <summary>ConfigurePersistence/InitializePersistenceAsync/DisposePersistenceAsync are implemented per ORM/provider in sibling partials.</summary>
-public sealed partial class TodoWebApplicationFactory
+public sealed partial class ApiWebApplicationFactory
     : WebApplicationFactory<Program>,
         IAsyncLifetime
 {

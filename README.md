@@ -46,10 +46,11 @@ dotnet dorn run
 | `--Orchestrator` | `aspire` | `aspire`, `docker-compose`, `none` | Local runtime |
 | `--IncludeTests` | `true` | `bool` | Generated test projects |
 | `--ConnectionString` | empty | free text | Database connection used instead of the provider's default |
+| `--IncludeSample` | `true` | `bool` | The Todo sample feature and the tests that use it |
 | `--IncludeAgentRules` | `false` | `bool` | `AGENTS.md` and a `CLAUDE.md` that points to it |
 
 > [!IMPORTANT]
-> `--Auth custom` requires `--Orm efcore`. The template stops an unsupported combination at build time with an actionable `#error`.
+> `--Auth custom` requires `--Orm efcore` and `--IncludeSample true`. The template stops an unsupported combination at build time with an actionable `#error`.
 
 ```bash
 dotnet new dorn-webapi -n Acme.Orders \
@@ -70,6 +71,22 @@ The generated test tiers keep their own SQLite file or Testcontainers database, 
 
 > [!WARNING]
 > The value lands in `appsettings.json` in clear text. Do not put secrets in it: generate with a passwordless or placeholder string and set the credentials with `dotnet user-secrets` or an environment variable such as `ConnectionStrings__<name>`.
+
+### 🧩 `IncludeSample`
+
+`--IncludeSample false` leaves out the Todo feature: its domain entity and event, handlers, endpoints, repository, persistence mapping, EF Core migrations or Dapper schema bootstrap, and the tests that exercise it. Every layer, both ORMs, every database, orchestrator, and `Auth=none` or `Auth=azure-ad` keep building, and all four test tiers stay present with small replacements that do not depend on the sample:
+
+| Tier | Replacement |
+| --- | --- |
+| Application | Mediator pipeline and validation behavior tests |
+| Integration | Opens a connection to the selected real database through the selected ORM |
+| Architecture | The layering rules, unchanged |
+| Functional | `GET /openapi/v1.json` smoke test, plus the health and rate-limiting tests |
+
+Without the sample, `Permissions.All` is empty and the EF Core `DbContext` has no entities and no migrations; add them with your first feature.
+
+> [!IMPORTANT]
+> `--Auth custom` cannot be combined with `--IncludeSample false`. Its seeded user, permission claims, and migrations are built around the sample, so the generated `Domain` project stops with an actionable `#error`.
 
 ### 🤖 `IncludeAgentRules`
 

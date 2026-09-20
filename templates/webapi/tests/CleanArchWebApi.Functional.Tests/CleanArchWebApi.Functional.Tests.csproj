@@ -10,17 +10,17 @@
 
   <!-- Single-symbol conditions only: dotnet-new doesn't reliably strip compound And/Or conditions. -->
   <ItemGroup>
-    <Compile Remove="TodoWebApplicationFactory.EfCore.cs" Condition="'$(UseDapper)' == 'True'" />
+    <Compile Remove="ApiWebApplicationFactory.EfCore.cs" Condition="'$(UseDapper)' == 'True'" />
     <Compile
-      Remove="TodoWebApplicationFactory.Dapper.Sqlite.cs"
+      Remove="ApiWebApplicationFactory.Dapper.Sqlite.cs"
       Condition="'$(UseDapperWithSqlite)' != 'True'"
     />
     <Compile
-      Remove="TodoWebApplicationFactory.Dapper.SqlServer.cs"
+      Remove="ApiWebApplicationFactory.Dapper.SqlServer.cs"
       Condition="'$(UseDapperWithSqlServer)' != 'True'"
     />
     <Compile
-      Remove="TodoWebApplicationFactory.Dapper.Postgres.cs"
+      Remove="ApiWebApplicationFactory.Dapper.Postgres.cs"
       Condition="'$(UseDapperWithPostgres)' != 'True'"
     />
   </ItemGroup>

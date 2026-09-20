@@ -2,14 +2,16 @@ using CleanArchWebApi.Infrastructure.Repositories.Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Testcontainers.PostgreSql;
+using Testcontainers.MsSql;
 
 namespace CleanArchWebApi.Functional.Tests;
 
-public sealed partial class TodoWebApplicationFactory
+public sealed partial class ApiWebApplicationFactory
 {
-    // Same image tag as docker-compose.Postgres.yml, kept in sync deliberately.
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17").Build();
+    // Same image tag as docker-compose.SqlServer.yml, kept in sync deliberately.
+    private readonly MsSqlContainer _container = new MsSqlBuilder(
+        "mcr.microsoft.com/mssql/server:2022-latest"
+    ).Build();
 
     partial void ConfigurePersistence(IWebHostBuilder builder)
     {

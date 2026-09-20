@@ -8,9 +8,8 @@ namespace CleanArchWebApi.WebApi.Extensions;
 /// IDistributedCache registration in Infrastructure for multi-instance deployments.</summary>
 public static class CachingExtensions
 {
-    // Todo data changes often (any create/update/complete/delete invalidates it explicitly anyway), so a short
-    // expiration just bounds the worst case where invalidation is somehow missed -- 5 minutes keeps that window
-    // small without defeating the point of caching short-lived read traffic.
+    // Writes invalidate explicitly, so a short expiration just bounds the worst case where invalidation is somehow
+    // missed -- 5 minutes keeps that window small without defeating the point of caching short-lived read traffic.
     public static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(5);
 
     public static IServiceCollection AddCaching(this IServiceCollection services)

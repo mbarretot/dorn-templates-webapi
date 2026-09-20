@@ -1,4 +1,6 @@
+#if (IncludeSample)
 global using CleanArchWebApi.Domain.Entities;
+#endif
 global using Dorn.Messaging.Contracts;
 global using Microsoft.Data.Sqlite;
 global using NSubstitute;

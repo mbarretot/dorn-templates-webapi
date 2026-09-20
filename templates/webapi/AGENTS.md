@@ -65,17 +65,30 @@ Dependencies point inward. Never add a reference that points outward.
 - **Caching**: a query implementing `ICacheableQuery<T>` is cached in HybridCache; a command implementing `ICacheInvalidatingCommand` lists the keys it invalidates.
 - **Endpoints**: a static class per feature in `WebApi/Endpoints` with a `Map<Feature>Endpoints` extension, called from `Program.cs`.
 - **Cross-cutting**: a global rate limiter (`RateLimitingExtensions`), OpenTelemetry (`ObservabilityExtensions`), and `GET /health` are already wired.
+<!--#if (IncludeSample) -->
 - **Sample feature**: `Todos` is the reference implementation across every layer. Copy its shape for a new feature.
+<!--#else -->
+- **First feature**: no sample feature was generated (`IncludeSample=false`). Add your first feature end to end: a domain type, a repository port, its use cases, a repository implementation, and an endpoint class.
+<!--#endif -->
 
 ### Persistence
 
 <!--#if (UseEfCore) -->
+<!--#if (IncludeSample) -->
 - The `DbContext` is `Infrastructure/Persistence/ApplicationDbContext.cs`; repositories are in `Infrastructure/Repositories/EfCore`.
 - Change the schema with a migration: `dotnet ef migrations add <Name> --project src/CleanArchWebApi.Infrastructure --startup-project src/CleanArchWebApi.WebApi` (needs the `dotnet-ef` tool). Do not edit the migrations that shipped with the solution; they target the selected database only.
+<!--#else -->
+- The `DbContext` is `Infrastructure/Persistence/ApplicationDbContext.cs`, still without entities; add repositories under `Infrastructure/Repositories/EfCore`.
+- No migrations shipped. Create the first one with `dotnet ef migrations add <Name> --project src/CleanArchWebApi.Infrastructure --startup-project src/CleanArchWebApi.WebApi --output-dir Persistence/Migrations` (needs the `dotnet-ef` tool).
+<!--#endif -->
 - `Program.cs` applies pending migrations at startup.
 <!--#else -->
 - Repositories are in `Infrastructure/Repositories/Dapper`; `DapperContext.CreateConnection()` is the only place a connection is opened.
+<!--#if (IncludeSample) -->
 - There is no migration tooling. `DapperContext.InitializeSchemaAsync` creates the schema at startup; extend it when you add a table.
+<!--#else -->
+- There is no migration tooling and no schema bootstrap yet. When you add the first table, add a method to `DapperContext` that creates it and call it from `Program.cs` at startup.
+<!--#endif -->
 - The expression-based `FindAsync`, `AnyAsync`, and `CountAsync` throw `NotSupportedException`. Add a dedicated repository method and hand-written SQL instead of relying on LINQ translation.
 <!--#endif -->
 <!--#if (UseSqlite) -->
@@ -109,7 +122,11 @@ Dependencies point inward. Never add a reference that points outward.
 <!--#if (UseAzureAdAuth) -->
 - Tokens are validated only, with `Microsoft.Identity.Web` and the `AzureAd` section. Replace the `REPLACE_ME_*` tenant and client ids. There is no login endpoint and no user store.
 <!--#endif -->
+<!--#if (IncludeSample) -->
 - Endpoints require permission policies. The permission strings are constants in `Application/Common/Security/Permissions.cs`; `PermissionAuthorizationHandler` checks a `permission` claim. To protect a new endpoint, add a constant to `Permissions.All` and call `RequireAuthorization(Permissions.<Name>)`.
+<!--#else -->
+- Permission policies are registered from `Permissions.All` in `Application/Common/Security/Permissions.cs`, which is empty until you add a feature. To protect an endpoint, add a constant, list it in `All`, and call `RequireAuthorization(Permissions.<Name>)`; `PermissionAuthorizationHandler` checks a `permission` claim.
+<!--#endif -->
 <!--#if (UseAzureAdAuth) -->
 - Entra ID must be configured (App Roles or a claims-mapping policy) to emit a `permission` claim with those exact values.
 <!--#endif -->

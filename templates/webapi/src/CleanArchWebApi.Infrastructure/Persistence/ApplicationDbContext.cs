@@ -19,8 +19,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         _publisher = publisher;
     }
 
+#if (IncludeSample)
     public DbSet<TodoItem> Items => Set<TodoItem>();
 
+#endif
 #if (UseCustomAuth)
     public DbSet<AppUser> Users => Set<AppUser>();
 
@@ -53,12 +55,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+#if (IncludeSample)
         modelBuilder.Entity<TodoItem>(builder =>
         {
             builder.HasKey(item => item.Id);
             builder.Property(item => item.Title).IsRequired().HasMaxLength(200);
         });
 
+#endif
 #if (UseCustomAuth)
         modelBuilder.Entity<AppUser>(builder =>
         {

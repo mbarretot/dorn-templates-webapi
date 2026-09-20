@@ -5,11 +5,11 @@ namespace CleanArchWebApi.Functional.Tests;
 /// Aspire's ServiceDefaults maps its own /health endpoint (dev-only); every other orchestrator
 /// relies on the baseline one wired up directly in Program.cs.
 /// </summary>
-public sealed class HealthCheckEndpointTests : IClassFixture<TodoWebApplicationFactory>
+public sealed class HealthCheckEndpointTests : IClassFixture<ApiWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public HealthCheckEndpointTests(TodoWebApplicationFactory factory)
+    public HealthCheckEndpointTests(ApiWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }

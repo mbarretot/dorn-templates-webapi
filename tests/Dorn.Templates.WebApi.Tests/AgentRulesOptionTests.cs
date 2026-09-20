@@ -236,6 +236,35 @@ public class AgentRulesOptionTests
         );
     }
 
+    [Theory]
+    [InlineData("efcore", "azure-ad")]
+    [InlineData("dapper", "none")]
+    public async Task Generate_WithAgentRulesAndWithoutTheSample_NeverMentionsTodo(
+        string orm,
+        string auth
+    )
+    {
+        await GeneratedProject.WithAsync(
+            "AgentRulesApp",
+            async outputDirectory =>
+            {
+                var agents = await ReadAgentsAsync(outputDirectory);
+
+                AssertMentions(agents, [.. AlwaysMentioned, "no sample feature was generated"]);
+                AssertOmits(agents, "Todo", "InitializeSchemaAsync");
+                AssertRendered(agents);
+            },
+            "--IncludeAgentRules",
+            "true",
+            "--IncludeSample",
+            "false",
+            "--Orm",
+            orm,
+            "--Auth",
+            auth
+        );
+    }
+
     private static async Task<string> ReadAgentsAsync(string outputDirectory)
     {
         var path = Path.Combine(outputDirectory, "AGENTS.md");

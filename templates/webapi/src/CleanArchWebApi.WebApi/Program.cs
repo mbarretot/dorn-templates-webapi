@@ -1,15 +1,17 @@
-using CleanArchWebApi.Application.Todos.CreateTodoItem;
+using CleanArchWebApi.Application;
 using CleanArchWebApi.Infrastructure.DependencyInjection;
 using CleanArchWebApi.WebApi;
-using CleanArchWebApi.WebApi.Endpoints;
 using CleanArchWebApi.WebApi.Extensions;
 using Dorn.Messaging;
 using FluentValidation;
+#if (IncludeSample || UseAuth)
+using CleanArchWebApi.WebApi.Endpoints;
+#endif
 #if (UseEfCore)
 using CleanArchWebApi.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 #endif
-#if (UseDapper)
+#if (UseDapper && IncludeSample)
 using CleanArchWebApi.Infrastructure.Repositories.Dapper;
 #endif
 #if (UseCustomAuth)
@@ -35,8 +37,8 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCaching();
-builder.Services.AddMediator(typeof(CreateTodoItemCommand).Assembly);
-builder.Services.AddValidatorsFromAssembly(typeof(CreateTodoItemCommand).Assembly);
+builder.Services.AddMediator(AssemblyReference.Assembly);
+builder.Services.AddValidatorsFromAssembly(AssemblyReference.Assembly);
 builder.Services.AddOpenApi();
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
@@ -84,7 +86,7 @@ using (var scope = app.Services.CreateScope())
 #endif
 }
 #endif
-#if (UseDapper)
+#if (UseDapper && IncludeSample)
 // Dapper has no migration story of its own, so bootstrap the schema on startup the same
 // way the EF Core branch above does via MigrateAsync. Fine for this scaffold's default
 // (SQLite, single instance); swap for a real migration tool in production setups with
@@ -112,7 +114,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 #endif
 
+#if (IncludeSample)
 app.MapTodoEndpoints();
+#endif
 #if (UseAuth)
 app.MapMeEndpoints();
 #endif

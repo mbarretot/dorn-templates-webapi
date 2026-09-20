@@ -32,12 +32,13 @@ dotnet dorn run
 | `--Orchestrator <aspire\|docker-compose\|none>` | `aspire` | Local runtime |
 | `--IncludeTests <bool>` | `true` | Generated test projects |
 | `--ConnectionString <text>` | empty | Database connection used instead of the provider's default |
+| `--IncludeSample <bool>` | `true` | The Todo sample feature and the tests that use it |
 | `--IncludeAgentRules <bool>` | `false` | `AGENTS.md` and a `CLAUDE.md` that points to it |
 
 > [!WARNING]
 > `--ConnectionString` is written to `appsettings.json` in clear text. Keep secrets out of it and use `dotnet user-secrets` or environment variables for credentials.
 
 > [!IMPORTANT]
-> `--Auth custom` requires `--Orm efcore`; unsupported combinations stop at build time with an actionable error.
+> `--Auth custom` requires `--Orm efcore` and `--IncludeSample true`; unsupported combinations stop at build time with an actionable error.
 
 [View source and full documentation](https://github.com/mbarretot/dorn-templates-webapi)

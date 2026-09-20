@@ -2,11 +2,11 @@ namespace CleanArchWebApi.Functional.Tests.Todos;
 
 /// <summary>Proves HybridCache is wired into the real HTTP pipeline without ever serving stale data
 /// across a mutation: every endpoint that reads a cached entry must reflect the latest write.</summary>
-public sealed class TodoCachingTests : IClassFixture<TodoWebApplicationFactory>
+public sealed class TodoCachingTests : IClassFixture<ApiWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public TodoCachingTests(TodoWebApplicationFactory factory)
+    public TodoCachingTests(ApiWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }

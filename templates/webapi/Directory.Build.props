@@ -12,6 +12,7 @@
   <PropertyGroup>
     <UseEfCore Condition="'$(UseEfCore)' == ''">True</UseEfCore>
     <UseDapper Condition="'$(UseDapper)' == ''">False</UseDapper>
+    <IncludeSample Condition="'$(IncludeSample)' == ''">True</IncludeSample>
     <UseSqlite Condition="'$(UseSqlite)' == ''">True</UseSqlite>
     <UseSqlServer Condition="'$(UseSqlServer)' == ''">False</UseSqlServer>
     <UsePostgres Condition="'$(UsePostgres)' == ''">False</UsePostgres>
@@ -47,6 +48,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseDapper)' == 'True' OR '$(UseDapper)' == 'true'">
     <DefineConstants>$(DefineConstants);UseDapper</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IncludeSample)' == 'True' OR '$(IncludeSample)' == 'true'">
+    <DefineConstants>$(DefineConstants);IncludeSample</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseSqlite)' == 'True' OR '$(UseSqlite)' == 'true'">
     <DefineConstants>$(DefineConstants);UseSqlite</DefineConstants>

@@ -27,6 +27,7 @@ dotnet test tests/Dorn.Templates.WebApi.Tests/Dorn.Templates.WebApi.Tests.csproj
 | --- | --- | --- |
 | Domain entities & events | `src/CleanArchWebApi.Domain` | Application ports and Infrastructure implementations |
 | Commands, queries, handlers | `src/CleanArchWebApi.Application` | Validators and pipeline behaviors |
+| Todo sample feature | The `Todos` folders, `TodoItem`, `TodoEndpoints`, migrations | The `IncludeSample` exclusions in template.json; shared files keep `#if (IncludeSample)` blocks, and the replacement tests are wrapped in `#if (!IncludeSample)` |
 | Persistence (EF Core / Dapper) | `src/CleanArchWebApi.Infrastructure` | `Orm` and `DatabaseProvider` template.json exclude/rename rules |
 | Endpoints & composition root | `src/CleanArchWebApi.WebApi` | `Auth` template.json exclude rules |
 | Auth (`custom`, `azure-ad`) | `Extensions/AuthenticationExtensions.cs`, `Endpoints/{Auth,Me}Endpoints.cs` | `custom` requires `Orm=efcore`; enforced by a `#error` guard in `src/CleanArchWebApi.Domain/TemplateConstraints.cs` (the template engine has no declarative cross-parameter constraint) |

@@ -37,13 +37,17 @@ public static class ServiceCollectionExtensions
             sp.GetRequiredService<ApplicationDbContext>()
         );
 
+#if (IncludeSample)
         services.AddScoped<ITodoItemRepository, Repositories.EfCore.TodoItemRepository>();
+#endif
 #endif
 
 #if (UseDapper)
         services.AddScoped<Repositories.Dapper.DapperContext>();
 
+#if (IncludeSample)
         services.AddScoped<ITodoItemRepository, Repositories.Dapper.TodoItemRepository>();
+#endif
 #endif
 
 #if (UseCustomAuth)

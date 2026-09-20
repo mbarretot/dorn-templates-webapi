@@ -1,6 +1,8 @@
 global using System.Net;
 global using System.Net.Http.Json;
+#if (IncludeSample)
 global using CleanArchWebApi.Application.Todos.GetTodoItems;
+#endif
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Mvc.Testing;
 global using Microsoft.Data.Sqlite;

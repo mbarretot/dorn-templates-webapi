@@ -1,6 +1,6 @@
 namespace CleanArchWebApi.Functional.Tests;
 
-public sealed partial class TodoWebApplicationFactory
+public sealed partial class ApiWebApplicationFactory
 {
     partial void ConfigurePersistence(IWebHostBuilder builder)
     {

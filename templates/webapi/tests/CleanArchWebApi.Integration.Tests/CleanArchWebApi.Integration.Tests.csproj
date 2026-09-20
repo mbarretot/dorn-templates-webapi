@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dorn.Messaging.Contracts" />
-    <!-- Builds a real IConfiguration for DapperTodoItemRepositoryTests. -->
+    <!-- Builds a real IConfiguration for the Dapper integration tests. -->
     <PackageReference
       Include="Microsoft.Extensions.Configuration"
       Condition="'$(UseDapper)' == 'True'"

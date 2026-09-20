@@ -8,14 +8,18 @@ namespace CleanArchWebApi.Functional.Tests.Authorization;
 
 public sealed class PermissionAuthorizationHandlerTests
 {
+    private const string Read = "items:read";
+    private const string Write = "items:write";
+    private const string Delete = "items:delete";
+
     [Fact]
     public async Task HandleAsync_UserHasMatchingPermissionClaim_Succeeds()
     {
         var handler = new PermissionAuthorizationHandler();
-        var requirement = new PermissionRequirement(Permissions.TodosRead);
+        var requirement = new PermissionRequirement(Read);
         var context = new AuthorizationHandlerContext(
             [requirement],
-            CreatePrincipal(Permissions.TodosRead),
+            CreatePrincipal(Read),
             resource: null
         );
 
@@ -28,10 +32,10 @@ public sealed class PermissionAuthorizationHandlerTests
     public async Task HandleAsync_UserLacksMatchingPermissionClaim_DoesNotSucceed()
     {
         var handler = new PermissionAuthorizationHandler();
-        var requirement = new PermissionRequirement(Permissions.TodosDelete);
+        var requirement = new PermissionRequirement(Delete);
         var context = new AuthorizationHandlerContext(
             [requirement],
-            CreatePrincipal(Permissions.TodosRead, Permissions.TodosWrite),
+            CreatePrincipal(Read, Write),
             resource: null
         );
 
@@ -44,7 +48,7 @@ public sealed class PermissionAuthorizationHandlerTests
     public async Task HandleAsync_UserHasNoPermissionClaimsAtAll_DoesNotSucceed()
     {
         var handler = new PermissionAuthorizationHandler();
-        var requirement = new PermissionRequirement(Permissions.TodosRead);
+        var requirement = new PermissionRequirement(Read);
         var identity = new ClaimsIdentity(authenticationType: "Test");
         var context = new AuthorizationHandlerContext(
             [requirement],

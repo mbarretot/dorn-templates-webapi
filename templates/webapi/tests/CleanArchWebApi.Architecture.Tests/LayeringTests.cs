@@ -8,8 +8,8 @@ public sealed class LayeringTests
 {
     private static readonly ArchitectureModel Architecture = new ArchLoader()
         .LoadAssembliesIncludingDependencies(
-            typeof(TodoItem).Assembly,
-            typeof(CreateTodoItemCommand).Assembly,
+            typeof(IRepository<>).Assembly,
+            AssemblyReference.Assembly,
             typeof(ServiceCollectionExtensions).Assembly,
             typeof(Program).Assembly
         )
@@ -87,8 +87,8 @@ public sealed class LayeringTests
         // this one rule uses plain reflection instead.
         var handlerTypes = new[]
         {
-            typeof(TodoItem).Assembly,
-            typeof(CreateTodoItemCommand).Assembly,
+            typeof(IRepository<>).Assembly,
+            AssemblyReference.Assembly,
             typeof(ServiceCollectionExtensions).Assembly,
             typeof(Program).Assembly,
         }
@@ -102,7 +102,9 @@ public sealed class LayeringTests
             )
             .ToList();
 
+#if (IncludeSample)
         Assert.NotEmpty(handlerTypes);
+#endif
         Assert.All(
             handlerTypes,
             handlerType =>

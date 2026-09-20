@@ -91,6 +91,12 @@
       "defaultValue": "true",
       "description": "Include the xUnit test projects: Unit (Application), Integration (real DatabaseProvider), Architecture (layering rules), and Functional (HTTP endpoints)."
     },
+    "IncludeSample": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Include the Todo sample feature (domain, handlers, endpoints, repository, persistence mapping, migrations or schema bootstrap, and the tests that exercise it). When false, the solution keeps all layers and all four test tiers, with small replacement tests that do not depend on the sample. Not supported together with Auth=custom, which is built around the sample's permissions and migrations."
+    },
     "IncludeAgentRules": {
       "type": "parameter",
       "datatype": "bool",
@@ -213,6 +219,42 @@
           "exclude": ["tests/**"]
         },
         {
+          "condition": "(!IncludeSample)",
+          "exclude": [
+            "src/CleanArchWebApi.Application/Todos/**",
+            "src/CleanArchWebApi.Application/Common/Caching/TodoCacheKeys.cs",
+            "src/CleanArchWebApi.Domain/Entities/**",
+            "src/CleanArchWebApi.Domain/Events/**",
+            "src/CleanArchWebApi.Domain/Common/Interfaces/ITodoItemRepository.cs",
+            "src/CleanArchWebApi.Infrastructure/Repositories/EfCore/**",
+            "src/CleanArchWebApi.Infrastructure/Repositories/Dapper/TodoItemRepository.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/**",
+            "src/CleanArchWebApi.WebApi/Endpoints/TodoEndpoints.cs",
+            "tests/CleanArchWebApi.Application.Tests/Todos/**",
+            "tests/CleanArchWebApi.Application.Tests/Common/Caching/**",
+            "tests/CleanArchWebApi.Application.Tests/Common/Behaviors/CachingBehaviorTests.cs",
+            "tests/CleanArchWebApi.Application.Tests/Common/Behaviors/CacheInvalidationBehaviorTests.cs",
+            "tests/CleanArchWebApi.Functional.Tests/Todos/**",
+            "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.Sqlite.cs",
+            "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.SqlServer.cs",
+            "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.Postgres.cs",
+            "tests/CleanArchWebApi.Integration.Tests/Todos/**"
+          ]
+        },
+        {
+          "condition": "(IncludeSample)",
+          "exclude": [
+            "tests/CleanArchWebApi.Integration.Tests/PersistenceConnectivityTests.cs",
+            "tests/CleanArchWebApi.Functional.Tests/ApiSmokeTests.cs"
+          ]
+        },
+        {
+          "condition": "(!(UseDapper && !IncludeSample))",
+          "exclude": [
+            "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.NoPersistence.cs"
+          ]
+        },
+        {
           "condition": "(!IncludeAgentRules)",
           "exclude": ["AGENTS.md", "CLAUDE.md"]
         },
@@ -231,25 +273,25 @@
         {
           "condition": "(UseDapper)",
           "exclude": [
-            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.EfCore.cs"
+            "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.EfCore.cs"
           ]
         },
         {
           "condition": "(!(UseDapper && UseSqlite))",
           "exclude": [
-            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.Sqlite.cs"
+            "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.Sqlite.cs"
           ]
         },
         {
           "condition": "(!(UseDapper && UseSqlServer))",
           "exclude": [
-            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.SqlServer.cs"
+            "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.SqlServer.cs"
           ]
         },
         {
           "condition": "(!(UseDapper && UsePostgres))",
           "exclude": [
-            "tests/CleanArchWebApi.Functional.Tests/TodoWebApplicationFactory.Dapper.Postgres.cs"
+            "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.Postgres.cs"
           ]
         },
         {

@@ -35,6 +35,7 @@ public class DapperContext
 #endif
     }
 
+#if (IncludeSample)
     // Dapper has no migration story of its own, so this stands in for what EF Core's
     // Database.MigrateAsync() gives that provider for free on a fresh database.
     public async Task InitializeSchemaAsync()
@@ -75,4 +76,5 @@ public class DapperContext
         );
 #endif
     }
+#endif
 }
