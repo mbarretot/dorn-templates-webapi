@@ -7,15 +7,22 @@ services:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+#if (HasConnectionString)
+      - "ConnectionStrings__CleanArchWebApi=__DORN_CONNECTION_STRING_COMPOSE__"
+#else
       - ConnectionStrings__CleanArchWebApi=Host=postgres;Port=5432;Database=CleanArchWebApi;Username=postgres;Password=${POSTGRES_PASSWORD:-Your_password123}
+#endif
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - OTEL_SERVICE_NAME=CleanArchWebApi
     depends_on:
+#if (!HasConnectionString)
       postgres:
         condition: service_healthy
+#endif
       otel-collector:
         condition: service_started
+#if (!HasConnectionString)
   postgres:
     image: postgres:17
     environment:
@@ -31,6 +38,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+#endif
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.158.0
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
@@ -80,5 +88,7 @@ services:
       - prometheus
       - loki
       - tempo
+#if (!HasConnectionString)
 volumes:
   postgres-data:
+#endif

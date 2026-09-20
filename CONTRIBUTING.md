@@ -31,9 +31,12 @@ dotnet test tests/Dorn.Templates.WebApi.Tests/Dorn.Templates.WebApi.Tests.csproj
 | Endpoints & composition root | `src/CleanArchWebApi.WebApi` | `Auth` template.json exclude rules |
 | Auth (`custom`, `azure-ad`) | `Extensions/AuthenticationExtensions.cs`, `Endpoints/{Auth,Me}Endpoints.cs` | `custom` requires `Orm=efcore`; enforced by a `#error` guard in `src/CleanArchWebApi.Domain/TemplateConstraints.cs` (the template engine has no declarative cross-parameter constraint) |
 | Orchestration (`aspire`, `docker-compose`, `none`) | `src/CleanArchWebApi.AppHost`, `src/CleanArchWebApi.ServiceDefaults`, `docker-compose*.yml` | Observability wiring stays equivalent across all three |
-| Template parameters | `.template.config/template.json` | Root and package README option tables |
+| Template parameters | `.template.config/template.json` | Root and package README option tables, `TemplateParameterMetadataTests` |
 | Generated CI workflow | `.github/workflows/ci.yml` (inside the template) | `tests/Dorn.Templates.WebApi.Tests` structural assertions |
 | Shared package versions | Template-local `Directory.Packages.props` | Package references remain intentional |
+
+> [!NOTE]
+> `Data Source=app.db` in the template's `appsettings.json` and the `__DORN_CONNECTION_STRING_*__` markers are replacement tokens of the `ConnectionString` parameter. Do not reuse those literals elsewhere in the template: every occurrence is rewritten at generation time.
 
 <details>
 <summary><strong>Generation-test harness detail</strong></summary>

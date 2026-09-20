@@ -13,6 +13,24 @@
       "identifier": "replace",
       "pattern": "[^A-Za-z0-9_]",
       "replacement": "_"
+    },
+    "stripOuterQuotes": {
+      "identifier": "replace",
+      "pattern": "^\"|\"$",
+      "replacement": ""
+    },
+    "escapeComposeInterpolation": {
+      "identifier": "replace",
+      "pattern": "\\$",
+      "replacement": "$$$$"
+    },
+    "jsonString": {
+      "identifier": "chain",
+      "steps": ["jsonEncode", "stripOuterQuotes"]
+    },
+    "composeString": {
+      "identifier": "chain",
+      "steps": ["escapeComposeInterpolation", "jsonEncode", "stripOuterQuotes"]
     }
   },
   "SpecialCustomOperations": {
@@ -79,6 +97,47 @@
       ],
       "defaultValue": "sqlite",
       "description": "The database provider used for persistence."
+    },
+    "ConnectionString": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "",
+      "description": "Connection string the generated API uses instead of the provider's default: a SQLite file or an external SQL Server/PostgreSQL. Empty (default) keeps the template's own per-provider default. It is written to appsettings.json in clear text, so never put secrets in it; keep credentials in user-secrets or environment variables."
+    },
+    "HasConnectionString": { "type": "computed", "value": "(ConnectionString != \"\")" },
+    "SqliteDefaultConnectionString": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": { "value": "Data Source=app.db" }
+    },
+    "SqliteConnectionString": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ConnectionString",
+        "fallbackVariableName": "SqliteDefaultConnectionString"
+      }
+    },
+    "SqliteConnectionStringJson": {
+      "type": "derived",
+      "datatype": "string",
+      "valueSource": "SqliteConnectionString",
+      "valueTransform": "jsonString",
+      "replaces": "Data Source=app.db"
+    },
+    "ConnectionStringJson": {
+      "type": "derived",
+      "datatype": "string",
+      "valueSource": "ConnectionString",
+      "valueTransform": "jsonString",
+      "replaces": "__DORN_CONNECTION_STRING_JSON__"
+    },
+    "ConnectionStringCompose": {
+      "type": "derived",
+      "datatype": "string",
+      "valueSource": "ConnectionString",
+      "valueTransform": "composeString",
+      "replaces": "__DORN_CONNECTION_STRING_COMPOSE__"
     },
     "UseSqlite": { "type": "computed", "value": "(DatabaseProvider == \"sqlite\")" },
     "UseSqlServer": { "type": "computed", "value": "(DatabaseProvider == \"sqlserver\")" },

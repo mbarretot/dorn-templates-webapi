@@ -45,6 +45,7 @@ dotnet dorn run
 | `--DatabaseProvider` | `sqlite` | `sqlite`, `sqlserver`, `postgres` | Database |
 | `--Orchestrator` | `aspire` | `aspire`, `docker-compose`, `none` | Local runtime |
 | `--IncludeTests` | `true` | `bool` | Generated test projects |
+| `--ConnectionString` | empty | free text | Database connection used instead of the provider's default |
 
 > [!IMPORTANT]
 > `--Auth custom` requires `--Orm efcore`. The template stops an unsupported combination at build time with an actionable `#error`.
@@ -55,6 +56,19 @@ dotnet new dorn-webapi -n Acme.Orders \
   --DatabaseProvider postgres \
   --Orchestrator docker-compose
 ```
+
+### 🔌 `ConnectionString`
+
+Empty (the default) keeps the template's own per-provider default: `Data Source=app.db` for SQLite, and for SQL Server and PostgreSQL the database that Aspire or Docker Compose provisions. A value is written to `appsettings.json` (`ConnectionStrings:Default` for SQLite, `ConnectionStrings:<name>` for SQL Server and PostgreSQL) and wherever the connection is wired:
+
+- **Aspire** with SQL Server or PostgreSQL: the `AppHost` reads the value from its own `appsettings.json` and passes it to the API, so no database container is provisioned.
+- **Docker Compose** with SQL Server or PostgreSQL: the API service receives the value as an environment variable, and the bundled database service and volume are omitted.
+- **`Orchestrator=none`**: `appsettings.json` is the only place that needs it.
+
+The generated test tiers keep their own SQLite file or Testcontainers database, so the value never reaches them. Quotes, backslashes, and `$` are escaped for JSON and Compose.
+
+> [!WARNING]
+> The value lands in `appsettings.json` in clear text. Do not put secrets in it: generate with a passwordless or placeholder string and set the credentials with `dotnet user-secrets` or an environment variable such as `ConnectionStrings__<name>`.
 
 ### 💾 `Orm=dapper` support level
 

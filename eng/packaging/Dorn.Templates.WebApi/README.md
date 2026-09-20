@@ -31,6 +31,10 @@ dotnet dorn run
 | `--DatabaseProvider <sqlite\|sqlserver\|postgres>` | `sqlite` | Database |
 | `--Orchestrator <aspire\|docker-compose\|none>` | `aspire` | Local runtime |
 | `--IncludeTests <bool>` | `true` | Generated test projects |
+| `--ConnectionString <text>` | empty | Database connection used instead of the provider's default |
+
+> [!WARNING]
+> `--ConnectionString` is written to `appsettings.json` in clear text. Keep secrets out of it and use `dotnet user-secrets` or environment variables for credentials.
 
 > [!IMPORTANT]
 > `--Auth custom` requires `--Orm efcore`; unsupported combinations stop at build time with an actionable error.
