@@ -5,8 +5,10 @@
     <Project Path="src/CleanArchWebApi.Infrastructure/CleanArchWebApi.Infrastructure.csproj" />
     <Project Path="src/CleanArchWebApi.ServiceDefaults/CleanArchWebApi.ServiceDefaults.csproj" />
     <Project Path="src/CleanArchWebApi.WebApi/CleanArchWebApi.WebApi.csproj" />
+<!--#if (IncludeTests) -->
     <Project Path="tests/CleanArchWebApi.Application.Tests/CleanArchWebApi.Application.Tests.csproj" />
     <Project Path="tests/CleanArchWebApi.Architecture.Tests/CleanArchWebApi.Architecture.Tests.csproj" />
     <Project Path="tests/CleanArchWebApi.Functional.Tests/CleanArchWebApi.Functional.Tests.csproj" />
     <Project Path="tests/CleanArchWebApi.Integration.Tests/CleanArchWebApi.Integration.Tests.csproj" />
+<!--#endif -->
 </Solution>

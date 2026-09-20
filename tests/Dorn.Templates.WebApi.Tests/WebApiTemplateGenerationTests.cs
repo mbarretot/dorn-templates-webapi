@@ -991,6 +991,94 @@ public class WebApiTemplateGenerationTests
         );
     }
 
+    [Fact]
+    public async Task GenerateAndBuild_DottedSolutionNameWithAspire_ReferencesTheAspireProjectType()
+    {
+        // A dotted name is the normal way to name a .NET solution. Aspire turns every non-identifier character of the
+        // project name into an underscore, so the AppHost must reference Projects.Acme_Dotted_WebApi.
+        await GenerateBuildAndCleanupAsync(
+            "Acme.Dotted",
+            async (outputDirectory, slnPath) =>
+            {
+                var appHost = await File.ReadAllTextAsync(
+                    Path.Combine(outputDirectory, "src", "Acme.Dotted.AppHost", "AppHost.cs")
+                );
+                Assert.Contains("Projects.Acme_Dotted_WebApi", appHost);
+                Assert.DoesNotContain("Projects.Acme.Dotted", appHost);
+
+                AssertBuildSucceeded(await BuildSupport.RunDotnetBuildAsync(slnPath));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Generate_SolutionNameWithADash_ReferencesTheAspireProjectType()
+    {
+        await GenerateAndCleanupAsync(
+            "Acme-Dash.Portal",
+            async outputDirectory =>
+            {
+                var appHost = await File.ReadAllTextAsync(
+                    Path.Combine(outputDirectory, "src", "Acme-Dash.Portal.AppHost", "AppHost.cs")
+                );
+                Assert.Contains("Projects.Acme_Dash_Portal_WebApi", appHost);
+            }
+        );
+    }
+
+    [Theory]
+    [InlineData("aspire")]
+    [InlineData("docker-compose")]
+    [InlineData("none")]
+    public async Task GenerateAndBuild_WithoutTests_ListsNoTestProjectsInTheSolution(
+        string orchestrator
+    )
+    {
+        // IncludeTests=false deletes the tests folder, so the .slnx must not list the four test projects either:
+        // otherwise restoring or building the solution fails with "project file was not found".
+        await GenerateBuildAndCleanupAsync(
+            "Acme.NoTests",
+            async (outputDirectory, slnPath) =>
+            {
+                Assert.False(Directory.Exists(Path.Combine(outputDirectory, "tests")));
+                var solution = await File.ReadAllTextAsync(slnPath);
+                Assert.DoesNotContain("tests/", solution);
+                Assert.DoesNotContain("<!--#", solution);
+
+                AssertBuildSucceeded(await BuildSupport.RunDotnetBuildAsync(slnPath));
+            },
+            "--IncludeTests",
+            "false",
+            "--Orchestrator",
+            orchestrator
+        );
+    }
+
+    [Theory]
+    [InlineData("aspire")]
+    [InlineData("docker-compose")]
+    public async Task Generate_WithTests_KeepsTheFourTestProjectsInTheSolution(string orchestrator)
+    {
+        await GenerateAndCleanupAsync(
+            "Acme.WithTests",
+            async outputDirectory =>
+            {
+                var solution = await File.ReadAllTextAsync(
+                    Path.Combine(outputDirectory, "Acme.WithTests.slnx")
+                );
+                foreach (
+                    var tier in new[] { "Application", "Architecture", "Functional", "Integration" }
+                )
+                {
+                    Assert.Contains($"tests/Acme.WithTests.{tier}.Tests/", solution);
+                }
+                Assert.DoesNotContain("<!--#", solution);
+            },
+            "--Orchestrator",
+            orchestrator
+        );
+    }
+
     internal static void AssertBuildSucceeded(
         (int ExitCode, string StdOut, string StdErr) buildResult
     )

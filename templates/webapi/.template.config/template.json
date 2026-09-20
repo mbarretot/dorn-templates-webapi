@@ -8,7 +8,49 @@
   "shortName": "dorn-webapi",
   "preferNameDirectory": true,
   "sourceName": "CleanArchWebApi",
+  "forms": {
+    "nonIdentifierToUnderscore": {
+      "identifier": "replace",
+      "pattern": "[^A-Za-z0-9_]",
+      "replacement": "_"
+    }
+  },
+  "SpecialCustomOperations": {
+    "**/*.slnx": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": ["<!--#if"],
+            "else": ["<!--#else"],
+            "elseif": ["<!--#elseif"],
+            "endif": ["<!--#endif"],
+            "trim": "true",
+            "wholeLine": "true",
+            "evaluator": "C++"
+          }
+        }
+      ]
+    }
+  },
   "symbols": {
+    "AspireSafeName": {
+      "type": "derived",
+      "datatype": "string",
+      "valueSource": "name",
+      "valueTransform": "nonIdentifierToUnderscore"
+    },
+    "AspireWebApiProject": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          { "type": "ref", "value": "AspireSafeName" },
+          { "type": "const", "value": "_WebApi" }
+        ]
+      },
+      "replaces": "CleanArchWebApi_WebApi"
+    },
     "IncludeTests": {
       "type": "parameter",
       "datatype": "bool",
