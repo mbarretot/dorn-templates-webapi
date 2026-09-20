@@ -15,6 +15,11 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - OTEL_SERVICE_NAME=CleanArchWebApi
+#if (UseFileSystemBlobs)
+      - BlobStorage__FileSystem__RootPath=/data/blobs
+    volumes:
+      - blobs:/data/blobs
+#endif
     depends_on:
 #if (!HasConnectionString)
       sqlserver:
@@ -88,7 +93,12 @@ services:
       - prometheus
       - loki
       - tempo
-#if (!HasConnectionString)
+#if (!HasConnectionString || UseFileSystemBlobs)
 volumes:
+#endif
+#if (!HasConnectionString)
   sqlserver-data:
+#endif
+#if (UseFileSystemBlobs)
+  blobs:
 #endif

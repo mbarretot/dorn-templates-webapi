@@ -136,6 +136,27 @@ public class TemplateParameterMetadataTests
     }
 
     [Fact]
+    public void BlobStorage_IsAChoiceThatDefaultsToManual_AndNamesThePortAndTheRisks()
+    {
+        var parameter = Parameter("BlobStorage");
+
+        Assert.Equal("choice", parameter.GetProperty("datatype").GetString());
+        Assert.Equal("manual", parameter.GetProperty("defaultValue").GetString());
+        Assert.Equal(
+            ["manual", "database", "filesystem"],
+            parameter
+                .GetProperty("choices")
+                .EnumerateArray()
+                .Select(choice => choice.GetProperty("choice").GetString())
+        );
+        var description = parameter.GetProperty("description").GetString()!;
+        Assert.Contains("IBlobStore", description, StringComparison.Ordinal);
+        Assert.Contains("memory", description, StringComparison.Ordinal);
+        Assert.Contains("BlobStorage:FileSystem:RootPath", description, StringComparison.Ordinal);
+        Assert.Contains("escape", description, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void IncludeSample_IsAnOptOutBool_ThatDocumentsTheCustomAuthLimit()
     {
         var parameter = Parameter("IncludeSample");

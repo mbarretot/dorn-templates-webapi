@@ -51,6 +51,7 @@ dotnet dorn run
 | `--IncludeLocalization` | `false` | `bool` | Localized API: `IStringLocalizer`, request localization from `Accept-Language`, `.resx` resources |
 | `--DefaultLanguage` | `en` | culture code | Default culture of the localized API |
 | `--Languages` | empty | comma-separated culture codes | Cultures the localized API supports, one `.resx` each |
+| `--BlobStorage` | `manual` | `manual`, `database`, `filesystem` | An `IBlobStore` port for binary files, backed by the database or by a directory |
 
 > [!IMPORTANT]
 > `--Auth custom` requires `--Orm efcore` and `--IncludeSample true`. The template stops an unsupported combination at build time with an actionable `#error`.
@@ -108,6 +109,18 @@ With `--IncludeLocalization true` the API negotiates a culture per request and l
 
 > [!NOTE]
 > The template ships English text only. The per-language files are starting points, not translations: the strings you add there are yours to translate.
+
+### 🗄️ `BlobStorage`
+
+`manual` (the default) generates nothing, so the solution is exactly what it was without the option. `database` and `filesystem` add the same port to the Application layer and one implementation behind it, for every ORM, database, orchestrator, and `Auth` choice:
+
+- **Port**: `IBlobStore` in `Application/Common/Storage` saves (creating or replacing), opens, checks, and deletes a blob by name; opening returns the stream with its content type and size. `BlobRules` validates every name before any store touches a path or a query. The template adds no endpoints: the port is the extension point, so you decide who may upload and download.
+- **`database`**: blobs live in a `Blobs` table (name, content type, content) of the selected database. EF Core ships an `AddBlobs` migration for SQLite, SQL Server, and PostgreSQL, applied with the rest at startup; Dapper creates the table in `DapperContext.InitializeSchemaAsync`. A blob is buffered in memory on write and read, and each provider caps a single value (roughly 1 GB for SQLite and PostgreSQL, 2 GB for SQL Server), so this suits small files such as avatars and documents. Keep large or numerous files behind the same port in a file store or object store.
+- **`filesystem`**: blobs are files under `BlobStorage:FileSystem:RootPath` in `appsettings.json` (default `App_Data/blobs`, resolved against the working directory; set `BlobStorage__FileSystem__RootPath` to move it). Docker Compose gets a named volume mounted at `/data/blobs` so uploads outlive the container. Add the root to `.gitignore`.
+- **Names**: a name is `/`-separated segments of ASCII letters, digits, `.`, `_`, and `-` (255 characters at most); a segment never starts or ends with `.`. That rejects `..`, rooted and drive-letter paths, backslashes, and hidden files before they reach the file system, and `FileSystemBlobStore` additionally checks that the resolved path stays under the root. Content types are stored beside the file, in a `.meta` folder of the root.
+
+> [!NOTE]
+> The file system store does not follow or block symbolic links inside the root, and it treats names case-sensitively only on case-sensitive file systems. Do not put links you do not control under the root.
 
 ### 💾 `Orm=dapper` support level
 

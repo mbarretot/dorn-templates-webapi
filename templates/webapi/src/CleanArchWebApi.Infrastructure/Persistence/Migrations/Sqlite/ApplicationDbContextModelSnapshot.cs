@@ -17,6 +17,7 @@ namespace CleanArchWebApi.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
+#if (IncludeSample)
             modelBuilder.Entity("CleanArchWebApi.Domain.Entities.TodoItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -36,6 +37,7 @@ namespace CleanArchWebApi.Infrastructure.Persistence.Migrations
                     b.ToTable("Items");
                 });
 
+#endif
 #if (UseCustomAuth)
             modelBuilder.Entity("CleanArchWebApi.Domain.Users.AppUser", b =>
                 {
@@ -143,6 +145,28 @@ namespace CleanArchWebApi.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
+#endif
+#if (UseDatabaseBlobs)
+            modelBuilder.Entity("CleanArchWebApi.Infrastructure.Storage.BlobRecord", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("Blobs", (string)null);
+                });
+
 #endif
 #pragma warning restore 612, 618
         }

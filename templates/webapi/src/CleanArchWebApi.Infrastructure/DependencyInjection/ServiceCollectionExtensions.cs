@@ -2,6 +2,9 @@ using CleanArchWebApi.Application.Common.Persistence;
 #if (UseCustomAuth)
 using CleanArchWebApi.Application.Common.Security;
 #endif
+#if (UseBlobStorage)
+using CleanArchWebApi.Application.Common.Storage;
+#endif
 using CleanArchWebApi.Domain.Common.Interfaces;
 #if (UseCustomAuth)
 using CleanArchWebApi.Domain.Users;
@@ -50,6 +53,23 @@ public static class ServiceCollectionExtensions
 #endif
 #endif
 
+#if (UseBlobStorage)
+#if (UseDatabaseBlobs)
+#if (UseEfCore)
+        services.AddScoped<IBlobStore, Storage.EfCoreBlobStore>();
+#elif (UseDapper)
+        services.AddScoped<IBlobStore, Storage.DapperBlobStore>();
+#endif
+#elif (UseFileSystemBlobs)
+        services.AddSingleton<IBlobStore>(_ => new Storage.FileSystemBlobStore(
+            configuration["BlobStorage:FileSystem:RootPath"]
+                ?? throw new InvalidOperationException(
+                    "BlobStorage:FileSystem:RootPath is not configured."
+                )
+        ));
+#endif
+
+#endif
 #if (UseCustomAuth)
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<AuthSeedOptions>(

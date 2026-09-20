@@ -121,6 +121,21 @@
       "defaultValue": "",
       "description": "Comma-separated culture codes the API supports, for example es,pt-BR,zh-Hans; custom codes such as gl are accepted, and the default language should be listed too. Each code except en gets a SharedResource.<code>.resx starter copy to translate. Empty supports the default language only. Only used with IncludeLocalization=true; at most 24 unique codes, otherwise the build of the Domain project fails with an actionable error."
     },
+    "BlobStorage": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        { "choice": "manual", "description": "No blob storage is generated; you wire your own (default)." },
+        { "choice": "database", "description": "IBlobStore backed by a table in the selected database (EF Core migration or Dapper schema bootstrap); meant for small files." },
+        { "choice": "filesystem", "description": "IBlobStore backed by a directory under a configurable root path, with path-traversal protection." }
+      ],
+      "defaultValue": "manual",
+      "description": "Where the API keeps binary files. manual generates nothing. database and filesystem generate an IBlobStore port in the Application layer (save, open, exists, delete, with content type and size), its implementation, and the DI registration. database stores blobs in the selected database for both ORMs and every provider and reads a whole blob into memory, so it suits small files; filesystem stores them under BlobStorage:FileSystem:RootPath in appsettings.json and rejects names that could escape that root."
+    },
+    "UseDatabaseBlobs": { "type": "computed", "value": "(BlobStorage == \"database\")" },
+    "UseFileSystemBlobs": { "type": "computed", "value": "(BlobStorage == \"filesystem\")" },
+    "UseBlobStorage": { "type": "computed", "value": "(UseDatabaseBlobs || UseFileSystemBlobs)" },
+    "DapperNeedsSchema": { "type": "computed", "value": "(UseDapper && (IncludeSample || UseDatabaseBlobs))" },
     "Orm": {
       "type": "parameter",
       "datatype": "choice",
@@ -724,6 +739,42 @@
           "exclude": ["src/CleanArchWebApi.WebApi/Localization/SharedResource.__DORN_LANGUAGE_24__.resx"]
         },
         {
+          "condition": "(!UseBlobStorage)",
+          "exclude": [
+            "src/CleanArchWebApi.Application/Common/Storage/**",
+            "tests/CleanArchWebApi.Application.Tests/Common/Storage/**",
+            "tests/CleanArchWebApi.Functional.Tests/BlobStorageTests.cs"
+          ]
+        },
+        {
+          "condition": "(!UseFileSystemBlobs)",
+          "exclude": [
+            "src/CleanArchWebApi.Infrastructure/Storage/FileSystemBlobStore.cs",
+            "tests/CleanArchWebApi.Integration.Tests/Storage/FileSystemBlobStoreTests.cs"
+          ]
+        },
+        {
+          "condition": "(!UseDatabaseBlobs)",
+          "exclude": [
+            "src/CleanArchWebApi.Infrastructure/Storage/BlobRecord.cs",
+            "src/CleanArchWebApi.Infrastructure/Storage/EfCoreBlobStore.cs",
+            "src/CleanArchWebApi.Infrastructure/Storage/DapperBlobStore.cs",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/**/*_AddBlobs*.cs",
+            "tests/CleanArchWebApi.Integration.Tests/Storage/DatabaseBlobStoreTests.cs"
+          ]
+        },
+        {
+          "condition": "(UseDapper)",
+          "exclude": [
+            "src/CleanArchWebApi.Infrastructure/Storage/BlobRecord.cs",
+            "src/CleanArchWebApi.Infrastructure/Storage/EfCoreBlobStore.cs"
+          ]
+        },
+        {
+          "condition": "(UseEfCore)",
+          "exclude": ["src/CleanArchWebApi.Infrastructure/Storage/DapperBlobStore.cs"]
+        },
+        {
           "condition": "(!IncludeSample)",
           "exclude": [
             "src/CleanArchWebApi.Application/Todos/**",
@@ -733,17 +784,23 @@
             "src/CleanArchWebApi.Domain/Common/Interfaces/ITodoItemRepository.cs",
             "src/CleanArchWebApi.Infrastructure/Repositories/EfCore/**",
             "src/CleanArchWebApi.Infrastructure/Repositories/Dapper/TodoItemRepository.cs",
-            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/**",
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/**/*_InitialCreate*.cs",
             "src/CleanArchWebApi.WebApi/Endpoints/TodoEndpoints.cs",
             "tests/CleanArchWebApi.Application.Tests/Todos/**",
             "tests/CleanArchWebApi.Application.Tests/Common/Caching/**",
             "tests/CleanArchWebApi.Application.Tests/Common/Behaviors/CachingBehaviorTests.cs",
             "tests/CleanArchWebApi.Application.Tests/Common/Behaviors/CacheInvalidationBehaviorTests.cs",
             "tests/CleanArchWebApi.Functional.Tests/Todos/**",
+            "tests/CleanArchWebApi.Integration.Tests/Todos/**"
+          ]
+        },
+        {
+          "condition": "(!IncludeSample && !UseDatabaseBlobs)",
+          "exclude": [
             "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.Sqlite.cs",
             "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.SqlServer.cs",
             "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.Dapper.Postgres.cs",
-            "tests/CleanArchWebApi.Integration.Tests/Todos/**"
+            "src/CleanArchWebApi.Infrastructure/Persistence/Migrations/**/ApplicationDbContextModelSnapshot.cs"
           ]
         },
         {
@@ -754,7 +811,7 @@
           ]
         },
         {
-          "condition": "(!(UseDapper && !IncludeSample))",
+          "condition": "(!(UseDapper && !IncludeSample && !UseDatabaseBlobs))",
           "exclude": [
             "tests/CleanArchWebApi.Functional.Tests/ApiWebApplicationFactory.NoPersistence.cs"
           ]

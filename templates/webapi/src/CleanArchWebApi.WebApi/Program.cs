@@ -11,7 +11,7 @@ using CleanArchWebApi.WebApi.Endpoints;
 using CleanArchWebApi.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 #endif
-#if (UseDapper && IncludeSample)
+#if (DapperNeedsSchema)
 using CleanArchWebApi.Infrastructure.Repositories.Dapper;
 #endif
 #if (UseCustomAuth)
@@ -89,7 +89,7 @@ using (var scope = app.Services.CreateScope())
 #endif
 }
 #endif
-#if (UseDapper && IncludeSample)
+#if (DapperNeedsSchema)
 // Dapper has no migration story of its own, so bootstrap the schema on startup the same
 // way the EF Core branch above does via MigrateAsync. Fine for this scaffold's default
 // (SQLite, single instance); swap for a real migration tool in production setups with

@@ -37,6 +37,7 @@ dotnet dorn run
 | `--IncludeLocalization <bool>` | `false` | `IStringLocalizer`, request localization from `Accept-Language`, `.resx` resources |
 | `--DefaultLanguage <culture>` | `en` | Default culture of the localized API |
 | `--Languages <codes>` | empty | Comma-separated culture codes, one `.resx` each (at most 24) |
+| `--BlobStorage <choice>` | `manual` | `manual`, `database`, or `filesystem`: an `IBlobStore` port backed by the database or a directory |
 
 > [!WARNING]
 > `--ConnectionString` is written to `appsettings.json` in clear text. Keep secrets out of it and use `dotnet user-secrets` or environment variables for credentials.

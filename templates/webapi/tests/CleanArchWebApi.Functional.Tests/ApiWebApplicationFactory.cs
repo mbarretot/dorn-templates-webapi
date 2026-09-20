@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 #endif
+#if (UseFileSystemBlobs)
+using Microsoft.Extensions.Configuration;
+#endif
 
 namespace CleanArchWebApi.Functional.Tests;
 
@@ -22,6 +25,11 @@ public sealed partial class ApiWebApplicationFactory
         $"{Guid.NewGuid()}.db"
     );
 
+#if (UseFileSystemBlobs)
+    public string BlobRoot { get; } =
+        Path.Combine(Path.GetTempPath(), $"blobs-{Guid.NewGuid():N}");
+
+#endif
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
 #if (UseCustomAuth)
@@ -51,6 +59,17 @@ public sealed partial class ApiWebApplicationFactory
             });
         });
 #endif
+#if (UseFileSystemBlobs)
+        builder.ConfigureAppConfiguration(
+            (_, configuration) =>
+                configuration.AddInMemoryCollection(
+                    new Dictionary<string, string?>
+                    {
+                        ["BlobStorage:FileSystem:RootPath"] = BlobRoot,
+                    }
+                )
+        );
+#endif
         ConfigurePersistence(builder);
     }
 
@@ -75,6 +94,12 @@ public sealed partial class ApiWebApplicationFactory
         {
             File.Delete(_databasePath);
         }
+#if (UseFileSystemBlobs)
+        if (Directory.Exists(BlobRoot))
+        {
+            Directory.Delete(BlobRoot, recursive: true);
+        }
+#endif
     }
 }
 

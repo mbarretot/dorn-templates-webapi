@@ -3,6 +3,10 @@ using CleanArchWebApi.Domain.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 #endif
+#if (UseDatabaseBlobs)
+using CleanArchWebApi.Application.Common.Storage;
+using CleanArchWebApi.Infrastructure.Storage;
+#endif
 
 namespace CleanArchWebApi.Infrastructure.Persistence;
 
@@ -105,6 +109,19 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 .WithMany()
                 .HasForeignKey(token => token.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+#endif
+#if (UseDatabaseBlobs)
+        modelBuilder.Entity<BlobRecord>(builder =>
+        {
+            builder.ToTable("Blobs");
+            builder.HasKey(blob => blob.Name);
+            builder.Property(blob => blob.Name).HasMaxLength(BlobRules.MaxNameLength);
+            builder
+                .Property(blob => blob.ContentType)
+                .IsRequired()
+                .HasMaxLength(BlobRules.MaxContentTypeLength);
+            builder.Property(blob => blob.Content).IsRequired();
         });
 #endif
 

@@ -35,12 +35,13 @@ public class DapperContext
 #endif
     }
 
-#if (IncludeSample)
+#if (DapperNeedsSchema)
     // Dapper has no migration story of its own, so this stands in for what EF Core's
     // Database.MigrateAsync() gives that provider for free on a fresh database.
     public async Task InitializeSchemaAsync()
     {
         using var connection = CreateConnection();
+#if (IncludeSample)
 #if (UseSqlite)
         await connection.ExecuteAsync(
             """
@@ -74,6 +75,43 @@ public class DapperContext
             )
             """
         );
+#endif
+#endif
+#if (UseDatabaseBlobs)
+#if (UseSqlite)
+        await connection.ExecuteAsync(
+            """
+            CREATE TABLE IF NOT EXISTS Blobs (
+                Name TEXT NOT NULL PRIMARY KEY,
+                ContentType TEXT NOT NULL,
+                Content BLOB NOT NULL
+            )
+            """
+        );
+#elif (UseSqlServer)
+        await connection.ExecuteAsync(
+            """
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Blobs')
+            BEGIN
+                CREATE TABLE Blobs (
+                    Name NVARCHAR(255) NOT NULL PRIMARY KEY,
+                    ContentType NVARCHAR(255) NOT NULL,
+                    Content VARBINARY(MAX) NOT NULL
+                )
+            END
+            """
+        );
+#elif (UsePostgres)
+        await connection.ExecuteAsync(
+            """
+            CREATE TABLE IF NOT EXISTS Blobs (
+                Name VARCHAR(255) NOT NULL PRIMARY KEY,
+                ContentType VARCHAR(255) NOT NULL,
+                Content BYTEA NOT NULL
+            )
+            """
+        );
+#endif
 #endif
     }
 #endif

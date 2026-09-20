@@ -1,4 +1,4 @@
-#if (UseDapper && !IncludeSample)
+#if (UseDapper && !IncludeSample && !UseDatabaseBlobs)
 namespace CleanArchWebApi.Functional.Tests;
 
 public sealed partial class ApiWebApplicationFactory

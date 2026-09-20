@@ -32,6 +32,11 @@ Rules for AI coding agents and humans working on this solution. It was generated
 <!--#else -->
 | Authentication | None: every endpoint is anonymous |
 <!--#endif -->
+<!--#if (UseDatabaseBlobs) -->
+| Blob storage | `IBlobStore` backed by the `Blobs` table of the database |
+<!--#elseif (UseFileSystemBlobs) -->
+| Blob storage | `IBlobStore` backed by files under a configured root directory |
+<!--#endif -->
 <!--#if (IncludeTests) -->
 | Tests | Four xUnit projects (see [Test tiers](#test-tiers)) |
 <!--#else -->
@@ -68,6 +73,9 @@ Dependencies point inward. Never add a reference that points outward.
 <!--#if (IncludeLocalization) -->
 - **Localization**: the culture comes from the `Accept-Language` header (`LocalizationExtensions`); default and supported cultures are the `Localization` section of `appsettings.json`. User-facing strings go through `IStringLocalizer<SharedResource>`: add the key to `WebApi/Localization/SharedResource.resx` (English) and translate it in each `SharedResource.<culture>.resx`. To add a language, add its `.resx` and its code to `Localization:SupportedCultures`.
 <!--#endif -->
+<!--#if (UseBlobStorage) -->
+- **Blob storage**: depend on `IBlobStore` (`Application/Common/Storage`) to save, open, check and delete a blob by name, with its content type and size. `BlobRules` validates every name; never build a path or a query from a raw client-supplied name.
+<!--#endif -->
 <!--#if (IncludeSample) -->
 - **Sample feature**: `Todos` is the reference implementation across every layer. Copy its shape for a new feature.
 <!--#else -->
@@ -80,6 +88,9 @@ Dependencies point inward. Never add a reference that points outward.
 <!--#if (IncludeSample) -->
 - The `DbContext` is `Infrastructure/Persistence/ApplicationDbContext.cs`; repositories are in `Infrastructure/Repositories/EfCore`.
 - Change the schema with a migration: `dotnet ef migrations add <Name> --project src/CleanArchWebApi.Infrastructure --startup-project src/CleanArchWebApi.WebApi` (needs the `dotnet-ef` tool). Do not edit the migrations that shipped with the solution; they target the selected database only.
+<!--#elseif (UseDatabaseBlobs) -->
+- The `DbContext` is `Infrastructure/Persistence/ApplicationDbContext.cs`; its only entity is the blob record. Add repositories under `Infrastructure/Repositories/EfCore`.
+- Change the schema with a migration: `dotnet ef migrations add <Name> --project src/CleanArchWebApi.Infrastructure --startup-project src/CleanArchWebApi.WebApi` (needs the `dotnet-ef` tool). Do not edit the `AddBlobs` migration that shipped with the solution; it targets the selected database only.
 <!--#else -->
 - The `DbContext` is `Infrastructure/Persistence/ApplicationDbContext.cs`, still without entities; add repositories under `Infrastructure/Repositories/EfCore`.
 - No migrations shipped. Create the first one with `dotnet ef migrations add <Name> --project src/CleanArchWebApi.Infrastructure --startup-project src/CleanArchWebApi.WebApi --output-dir Persistence/Migrations` (needs the `dotnet-ef` tool).
@@ -87,7 +98,7 @@ Dependencies point inward. Never add a reference that points outward.
 - `Program.cs` applies pending migrations at startup.
 <!--#else -->
 - Repositories are in `Infrastructure/Repositories/Dapper`; `DapperContext.CreateConnection()` is the only place a connection is opened.
-<!--#if (IncludeSample) -->
+<!--#if (IncludeSample || UseDatabaseBlobs) -->
 - There is no migration tooling. `DapperContext.InitializeSchemaAsync` creates the schema at startup; extend it when you add a table.
 <!--#else -->
 - There is no migration tooling and no schema bootstrap yet. When you add the first table, add a method to `DapperContext` that creates it and call it from `Program.cs` at startup.
@@ -113,6 +124,17 @@ Dependencies point inward. Never add a reference that points outward.
 <!--#endif -->
 - Never put secrets in `appsettings.json`; use `dotnet user-secrets` or environment variables for credentials.
 
+<!--#if (UseBlobStorage) -->
+### Blob storage
+
+<!--#if (UseDatabaseBlobs) -->
+- Blobs live in the `Blobs` table, written by the `Storage/` class of `Infrastructure` that matches the ORM. A blob is read into memory whole, so this suits small files; keep large ones in an object store behind the same port.
+<!--#else -->
+- Blobs are files under `BlobStorage:FileSystem:RootPath` in `appsettings.json` (default `App_Data/blobs`, relative to the working directory). `FileSystemBlobStore` refuses any name that resolves outside that root; keep that check when you change it.
+- Keep the root out of source control and on a persistent volume when you run in a container.
+<!--#endif -->
+
+<!--#endif -->
 <!--#if (UseAuth) -->
 ### Authentication and authorization
 

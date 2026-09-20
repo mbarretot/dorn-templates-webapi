@@ -9,8 +9,10 @@ public sealed partial class ApiWebApplicationFactory
 {
     partial void ConfigurePersistence(IWebHostBuilder builder)
     {
+#if (IncludeSample)
         CreateSqliteSchema();
 
+#endif
         builder.ConfigureServices(services =>
         {
             // DapperContext reads its connection string from IConfiguration at construction
@@ -34,6 +36,7 @@ public sealed partial class ApiWebApplicationFactory
             .Build();
     }
 
+#if (IncludeSample)
     private void CreateSqliteSchema()
     {
         using var connection = new SqliteConnection($"Data Source={_databasePath}");
@@ -44,6 +47,7 @@ public sealed partial class ApiWebApplicationFactory
         command.ExecuteNonQuery();
     }
 
+#endif
     private partial Task InitializePersistenceAsync() => Task.CompletedTask;
 
     private partial Task DisposePersistenceAsync() => Task.CompletedTask;
