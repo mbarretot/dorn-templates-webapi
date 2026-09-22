@@ -36,6 +36,9 @@
     <!-- Transitive override: Microsoft.AspNetCore.OpenApi 10.0.9 still pulls Microsoft.OpenApi 2.0.0,
              vulnerable to GHSA-v5pm-xwqc-g5wc (stack overflow parsing circular schema refs), patched in 2.7.5+. -->
     <PackageVersion Include="Microsoft.OpenApi" Version="2.10.0" />
+    <!-- Serves an interactive UI over the document Microsoft.AspNetCore.OpenApi already generates;
+             no separate document generator, unlike Swashbuckle. -->
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.17.7" />
     <!-- Auth (declared unconditionally so central package management validates the conditional reference;
          the actual PackageReference in CleanArchWebApi.WebApi.csproj is condition-controlled). -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />

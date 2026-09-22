@@ -4,6 +4,7 @@ using CleanArchWebApi.WebApi;
 using CleanArchWebApi.WebApi.Extensions;
 using Dorn.Messaging;
 using FluentValidation;
+using Scalar.AspNetCore;
 #if (IncludeSample || UseAuth)
 using CleanArchWebApi.WebApi.Endpoints;
 #endif
@@ -104,6 +105,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 #if (IncludeLocalization)
