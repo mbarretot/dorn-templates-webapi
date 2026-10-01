@@ -58,8 +58,8 @@
       Include="Microsoft.Extensions.DependencyInjection.Abstractions"
       Version="10.0.9"
     />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
     <!-- Concrete DI container (not just abstractions), needed by MediatorPublishTests to build
              a real IServiceProvider. -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
@@ -95,7 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Aspire orchestration / ServiceDefaults: health checks, service discovery, resilience. -->
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.5.3" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.0" />
     <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.4.6" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
